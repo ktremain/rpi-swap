@@ -1,0 +1,1 @@
+ACTION=="change", KERNEL=="loop*", SUBSYSTEM=="block", PROGRAM="/bin/rpi-loop-device-namer %m", SYMLINK+="%c"

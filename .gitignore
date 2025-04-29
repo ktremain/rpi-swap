@@ -1,0 +1,11 @@
+.debhelper/
+*.debhelper.log
+*.postrm.debhelper
+*.substvars
+
+debian/files
+debian/debhelper-build-stamp
+
+debian/rpi-loop-var-swap/
+debian/rpi-symlink-loop-devices/
+debian/rpi-zram-swap/

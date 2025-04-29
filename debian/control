@@ -1,0 +1,35 @@
+Source: rpi-zram-swap
+Section: embedded
+Priority: optional
+Maintainer: Richard Oliver <richard.oliver@raspberrypi.com>
+Build-Depends: debhelper (>=13), debhelper-compat (= 13)
+Standards-Version: 3.9.5
+Homepage: https://www.raspberrypi.com/software
+
+Package: rpi-symlink-loop-devices
+Architecture: all
+Depends: systemd
+Description: creates by-backingfile symlinks when loop devices are set up
+ Creates symlinks in /dev/disk/by-backingfile/ on loop device setup. Symlinks
+ are systemd-escape paths of the backing file used (i.e. /var/swap becomes
+ -var-swap).
+
+Package: rpi-loop-var-swap
+Architecture: all
+Provides: dphys-swapfile
+Conflicts: dphys-swapfile
+Replaces: dphys-swapfile
+Depends: rpi-symlink-loop-devices
+Description: makes the swap file available as a block device
+ RaspiOS, by default, makes use of the /var/swap file (rather than using a
+ block device). This package makes the swap file available as the
+ /dev/disk/by-backingfile/-var-swap block device for software requiring
+ block-based swap.
+ This package conflicts with dphys-swapfile as it is not possible to
+ simultaneously use /var/swap as a swap file.
+
+Package: rpi-zram-swap
+Architecture: all
+Depends: systemd-zram-generator, rpi-loop-var-swap
+Description: config for Zram-swap with a backing file
+ Raspberry Pi's Zram-backed swap configuration.

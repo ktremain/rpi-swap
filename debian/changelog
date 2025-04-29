@@ -1,0 +1,5 @@
+rpi-zram-swap (0.0.1) UNRELEASED; urgency=low
+
+  * Initial release.
+
+ --  <richard.oliver@raspberrypi.com>  Tue, 29 Apr 2025 14:01:00 +0100
