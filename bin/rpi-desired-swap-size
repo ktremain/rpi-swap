@@ -1,0 +1,56 @@
+#!/bin/sh
+
+set -e
+
+: "${CONF_SWAPFILE:=/var/swap}"
+: "${CONF_SWAPFACTOR:=2}"
+
+# CONF_MAXDISK_PCT is optional and is allowed to be an empty string
+# shellcheck disable=SC2236
+if [ -z "${CONF_MAXDISK_PCT}" ] && [ ! -n "${CONF_MAXDISK_PCT+set}" ]; then
+  CONF_MAXDISK_PCT=50
+fi
+
+# CONF_MAXSWAP is optional and is allowed to be an empty string
+# shellcheck disable=SC2236
+if [ -z "${CONF_MAXSWAP}" ] && [ ! -n "${CONF_MAXSWAP+set}" ]; then
+  CONF_MAXSWAP=2048
+fi
+
+if [ -z "${CONF_SWAPSIZE}" ] || ! [ "${CONF_SWAPSIZE}" -eq "${CONF_SWAPSIZE}" ] 2>/dev/null ; then
+  # Must have SWAPFACTOR to even try to proceed
+  if [ -z "${CONF_SWAPFACTOR}" ] || ! [ "${CONF_SWAPFACTOR}" -eq "${CONF_SWAPFACTOR}" ] 2>/dev/null ; then
+    CONF_SWAPFACTOR="2"
+  fi
+  RAM_KB="$(grep -oP -m1 '^MemTotal:\s*\K\d+(?=\s+kB$)' /proc/meminfo)"
+  RAM_MB="$((RAM_KB / 1024))"
+  CANDIDATE_SIZE="$((RAM_MB * CONF_SWAPFACTOR))"
+
+  if [ -n "${CONF_MAXDISK_PCT}" ] && [ "${CONF_MAXDISK_PCT}" -eq "${CONF_MAXDISK_PCT}" ] 2>/dev/null; then
+    SWAPFILE_DIR="$(dirname "${CONF_SWAPFILE}")"
+    FREEDISK_MIB="$(df -BM "${SWAPFILE_DIR}" | awk 'END {print substr($4, 1, length($4)-1)}')"
+    if [ -f "${CONF_SWAPFILE}" ]; then
+      # shellcheck disable=SC2010
+      EXISTING_SIZE="$(ls --block-size=M --size "${CONF_SWAPFILE}" | grep -oP -m1 '^\d+(?=M '"${CONF_SWAPFILE}"'$)')"
+      FREEDISK_MIB="$((FREEDISK_MIB + EXISTING_SIZE))"
+    fi
+
+    MAX_DISK="$((FREEDISK_MIB * CONF_MAXDISK_PCT))"
+    MAX_DISK="$((MAX_DISK / 100))"
+
+    if [ "$MAX_DISK" -lt "$CANDIDATE_SIZE" ]; then
+      echo "Limited by free disk space"
+      CANDIDATE_SIZE="$MAX_DISK"
+    fi
+  fi
+
+  if [ -n "${CONF_MAXSWAP}" ] && [ "${CONF_MAXSWAP}" -eq "${CONF_MAXSWAP}" ] 2>/dev/null; then
+    if [ "$CONF_MAXSWAP" -lt "$CANDIDATE_SIZE" ]; then
+      echo "Limited by absolute limit"
+      CANDIDATE_SIZE="$CONF_MAXSWAP"
+    fi
+  fi
+  CONF_SWAPSIZE="$CANDIDATE_SIZE"
+fi
+
+echo "$CONF_SWAPSIZE"
