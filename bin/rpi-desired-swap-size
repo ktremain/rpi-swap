@@ -39,14 +39,14 @@ if [ -z "${CONF_SWAPSIZE}" ] || ! [ "${CONF_SWAPSIZE}" -eq "${CONF_SWAPSIZE}" ] 
     MAX_DISK="$((MAX_DISK / 100))"
 
     if [ "$MAX_DISK" -lt "$CANDIDATE_SIZE" ]; then
-      echo "Limited by free disk space"
+      1>&2 echo "Limited by free disk space"
       CANDIDATE_SIZE="$MAX_DISK"
     fi
   fi
 
   if [ -n "${CONF_MAXSWAP}" ] && [ "${CONF_MAXSWAP}" -eq "${CONF_MAXSWAP}" ] 2>/dev/null; then
     if [ "$CONF_MAXSWAP" -lt "$CANDIDATE_SIZE" ]; then
-      echo "Limited by absolute limit"
+      1>&2 echo "Limited by absolute limit"
       CANDIDATE_SIZE="$CONF_MAXSWAP"
     fi
   fi

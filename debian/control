@@ -14,6 +14,15 @@ Description: creates by-backingfile symlinks when loop devices are set up
  are systemd-escape paths of the backing file used (i.e. /var/swap becomes
  -var-swap).
 
+# A temporary package just for experimentation purposes
+Package: rpi-resize-var-swap-service
+Architecture: all
+Provides: dphys-swapfile
+Conflicts: dphys-swapfile
+Replaces: dphys-swapfile
+Description: resizes /var/swap on boot
+ Oneshot service that resizes swap file
+
 Package: rpi-loop-var-swap
 Architecture: all
 Provides: dphys-swapfile

@@ -1,0 +1,3 @@
+bin/rpi-desired-swap-size bin/
+etc/rpi-swap/swap.conf etc/rpi-swap/
+lib/systemd/system-generators/rpi-swap-generator lib/systemd/system-generators/
