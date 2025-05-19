@@ -28,43 +28,7 @@ CONF_SWAPFILE="$(realpath "${CONF_SWAPFILE}")"
 
 # Note, fallocate can be used to create / grow / but not shrink
 
-if [ "${CONF_SWAPSIZE}" -eq 0 ]; then
-  if [ -f "${CONF_SWAPFILE}" ]; then
-    rm -f "${CONF_SWAPFILE}"
-  fi
-else
-  if [ -f "${CONF_SWAPFILE}" ]; then
-    CURRENT_SIZE="$( \
-      du \
-        --apparent-size \
-        --block-size=M \
-        "${CONF_SWAPFILE}" | \
-          grep -oP '^\d+(?=M)' \
-    )"
-    if [ "${CONF_SWAPSIZE}" -gt "${CURRENT_SIZE}" ]; then
-      fallocate \
-        --posix \
-        --length "${CONF_SWAPSIZE}M" \
-        "${CONF_SWAPFILE}"
-    elif [ "${CONF_SWAPSIZE}" -lt "${CURRENT_SIZE}" ]; then
-      truncate \
-        --size "${CONF_SWAPSIZE}M" \
-        "${CONF_SWAPFILE}"
-    fi
-  else
-    (
-      umask 077
-      fallocate \
-        --posix \
-        --length "${CONF_SWAPSIZE}M" \
-        "${CONF_SWAPFILE}"
-    )
-  fi
-
-  mkswap \
-    --uuid clear \
-    "${CONF_SWAPFILE}"
-
+if [ "${CONF_SWAPSIZE}" -ne 0 ]; then
   # Now generate file
   UNIT_NAME="$( \
     systemd-escape \
@@ -78,9 +42,13 @@ else
 
 [Unit]
 SourcePath=${CONFIG_FILE}
+After=rpi-resize-var-swap-service.service
+Requires=rpi-resize-var-swap-service.service
 
 [Swap]
 What=${CONF_SWAPFILE}
 EOF
 
+  mkdir -p /run/systemd/generator/swap.target.wants
+  ln -s "../${UNIT_NAME}" /run/systemd/generator/swap.target.wants/"${UNIT_NAME}"
 fi

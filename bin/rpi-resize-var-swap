@@ -1,0 +1,69 @@
+#!/bin/sh
+
+set -e
+
+: "${CONFIG_FILE:=/etc/rpi-swap/swap.conf}"
+: "${SWAP_FILE_SIZE_CALC_BIN:=/bin/rpi-desired-swap-size}"
+
+: "${CONF_SWAPFILE:=/var/swap}"
+eval "$( \
+  apt-config \
+    --config-file "${CONFIG_FILE}" \
+    shell \
+      CONF_SWAPFILE      DphysSwapfile::SwapFile \
+      CONF_SWAPFACTOR    DphysSwapfile::SwapFactor \
+      CONF_MAXDISK_PCT   DphysSwapfile::MaxDiskPct \
+      CONF_MAXSWAP       DphysSwapfile::MaxSwap \
+      CONF_SWAPSIZE      DphysSwapfile::SwapSize
+)"
+export \
+  CONF_SWAPFILE \
+  CONF_SWAPFACTOR \
+  CONF_MAXDISK_PCT \
+  CONF_MAXSWAP \
+  CONF_SWAPSIZE
+
+CONF_SWAPSIZE="$(${SWAP_FILE_SIZE_CALC_BIN})"
+CONF_SWAPFILE="$(realpath "${CONF_SWAPFILE}")"
+
+# Note, fallocate can be used to create / grow / but not shrink
+
+if [ "${CONF_SWAPSIZE}" -eq 0 ]; then
+  if [ -f "${CONF_SWAPFILE}" ]; then
+    rm -f "${CONF_SWAPFILE}"
+  fi
+else
+  if [ -f "${CONF_SWAPFILE}" ]; then
+    CURRENT_SIZE="$( \
+      du \
+        --apparent-size \
+        --block-size=M \
+        "${CONF_SWAPFILE}" | \
+          grep -oP '^\d+(?=M)' \
+    )"
+    if [ "${CONF_SWAPSIZE}" -gt "${CURRENT_SIZE}" ]; then
+      fallocate \
+        --posix \
+        --length "${CONF_SWAPSIZE}M" \
+        "${CONF_SWAPFILE}"
+    elif [ "${CONF_SWAPSIZE}" -lt "${CURRENT_SIZE}" ]; then
+      truncate \
+        --size "${CONF_SWAPSIZE}M" \
+        "${CONF_SWAPFILE}"
+    fi
+  else
+    (
+      umask 077
+      fallocate \
+        --posix \
+        --length "${CONF_SWAPSIZE}M" \
+        "${CONF_SWAPFILE}"
+    )
+  fi
+
+  swaplabel \
+  || mkswap \
+    --uuid clear \
+    "${CONF_SWAPFILE}"
+
+fi

@@ -1,3 +1,4 @@
 bin/rpi-desired-swap-size bin/
+bin/rpi-resize-var-swap bin/
 etc/rpi-swap/swap.conf etc/rpi-swap/
 lib/systemd/system-generators/rpi-swap-generator lib/systemd/system-generators/
