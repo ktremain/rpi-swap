@@ -10,11 +10,11 @@ eval "$( \
   apt-config \
     --config-file "${CONFIG_FILE}" \
     shell \
-      CONF_SWAPFILE      DphysSwapfile::SwapFile \
-      CONF_SWAPFACTOR    DphysSwapfile::SwapFactor \
-      CONF_MAXDISK_PCT   DphysSwapfile::MaxDiskPct \
-      CONF_MAXSWAP       DphysSwapfile::MaxSwap \
-      CONF_SWAPSIZE      DphysSwapfile::SwapSize
+      CONF_SWAPFILE      RpiSwap::Swapfile::Path \
+      CONF_SWAPFACTOR    RpiSwap::Swapfile::SwapFactor \
+      CONF_MAXDISK_PCT   RpiSwap::Swapfile::MaxDiskPct \
+      CONF_MAXSWAP       RpiSwap::Swapfile::MaxSwap \
+      CONF_SWAPSIZE      RpiSwap::Swapfile::SwapSize
 )"
 export \
   CONF_SWAPFILE \
