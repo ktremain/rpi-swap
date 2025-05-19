@@ -6,5 +6,5 @@ LOOPDIR="/sys/block/loop${MINOR_NUM}/loop"
 
 if [ -d "$LOOPDIR" ]; then
   printf "disk/by-backingfile/"
-  systemd-escape "$(cat "$LOOPDIR"/backing_file)"
+  systemd-escape --path "$(cat "$LOOPDIR"/backing_file)"
 fi

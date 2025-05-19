@@ -1,0 +1,11 @@
+[Unit]
+Description=rpi-setup-loop - set up file on loop device
+DefaultDependencies=no
+Requires=sysinit.target
+After=sysinit.target
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c "/sbin/losetup -f $(systemd-escape --unescape --path %i)"
+ExecStop=/sbin/losetup -d /dev/disk/by-backingfile/%i
+RemainAfterExit=yes

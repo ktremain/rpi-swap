@@ -6,6 +6,7 @@ Build-Depends: debhelper (>=13), debhelper-compat (= 13)
 Standards-Version: 3.9.5
 Homepage: https://www.raspberrypi.com/software
 
+# We should rename this to somthing like rpi-loop-utils
 Package: rpi-symlink-loop-devices
 Architecture: all
 Depends: systemd

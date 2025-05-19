@@ -1,2 +1,3 @@
 debian/70-rpi-symlink-loop-devices.rules lib/udev/rules.d
 bin/rpi-loop-device-namer usr/bin
+lib/systemd/system/rpi-setup-loop@.service lib/systemd/system
