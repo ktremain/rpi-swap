@@ -3,7 +3,7 @@
 set -e
 
 : "${CONF_SWAPFILE:=/var/swap}"
-: "${CONF_SWAPFACTOR:=2}"
+: "${CONF_SWAPFACTOR:=1}"
 
 # CONF_MAXDISK_PCT is optional and is allowed to be an empty string
 # shellcheck disable=SC2236
