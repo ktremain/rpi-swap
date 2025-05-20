@@ -1,9 +1,9 @@
 [Unit]
-Description=rpi-resize-var-swap-service - resize /var/swap
+Description=rpi-resize-var-swap-service - resize swapfile
 DefaultDependencies=no
 After=systemd-remount-fs.service
 Requires=systemd-remount-fs.service
 
 [Service]
 Type=oneshot
-ExecStart=/bin/rpi-resize-var-swap
+ExecStart=/bin/rpi-resize-swap-file
