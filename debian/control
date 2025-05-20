@@ -15,12 +15,13 @@ Description: loop device utilities
  unit rpi-setup-loop@.service (for setting up/tearing down loop devices) is
  also provided.
 
-# A temporary package just for experimentation purposes
-Package: rpi-resize-var-swap-service
+Package: rpi-swap
 Architecture: all
-Depends: rpi-symlink-loop-devices
+Depends: rpi-loop-utils systemd-zram-generator
 Provides: dphys-swapfile
 Conflicts: dphys-swapfile
 Replaces: dphys-swapfile
-Description: resizes /var/swap on boot
- Oneshot service that resizes swap file
+Description: early-boot swap configuration
+ This packages provides early-boot generators/services to setup a variety of
+ different swap configurations (such as file or zram+file). Dynamic resizing of
+ swap files is also supported.
