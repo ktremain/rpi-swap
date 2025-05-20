@@ -1,4 +1,4 @@
-Source: rpi-zram-swap
+Source: rpi-swap
 Section: embedded
 Priority: optional
 Maintainer: Richard Oliver <richard.oliver@raspberrypi.com>
