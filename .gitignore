@@ -6,6 +6,5 @@
 debian/files
 debian/debhelper-build-stamp
 
-debian/rpi-loop-var-swap/
-debian/rpi-symlink-loop-devices/
-debian/rpi-zram-swap/
+debian/rpi-swap/
+debian/rpi-loop-utils/
