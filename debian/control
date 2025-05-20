@@ -17,7 +17,7 @@ Description: loop device utilities
 
 Package: rpi-swap
 Architecture: all
-Depends: rpi-loop-utils systemd-zram-generator
+Depends: rpi-loop-utils, systemd-zram-generator
 Provides: dphys-swapfile
 Conflicts: dphys-swapfile
 Replaces: dphys-swapfile
