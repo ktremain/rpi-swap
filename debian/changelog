@@ -1,4 +1,4 @@
-rpi-zram-swap (0.0.1) UNRELEASED; urgency=low
+rpi-swap (0.0.1) UNRELEASED; urgency=low
 
   * Initial release.
 
