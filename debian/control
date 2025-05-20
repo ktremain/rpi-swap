@@ -6,14 +6,14 @@ Build-Depends: debhelper (>=13), debhelper-compat (= 13)
 Standards-Version: 3.9.5
 Homepage: https://www.raspberrypi.com/software
 
-# We should rename this to somthing like rpi-loop-utils
-Package: rpi-symlink-loop-devices
+Package: rpi-loop-utils
 Architecture: all
 Depends: systemd
-Description: creates by-backingfile symlinks when loop devices are set up
- Creates symlinks in /dev/disk/by-backingfile/ on loop device setup. Symlinks
- are systemd-escape paths of the backing file used (i.e. /var/swap becomes
- -var-swap).
+Description: loop device utilities
+ This package provides udev rules to automatically create/destroy
+ /dev/disk/by-backingfile/ symlinks for loop devices. The templated systemd
+ unit rpi-setup-loop@.service (for setting up/tearing down loop devices) is
+ also provided.
 
 # A temporary package just for experimentation purposes
 Package: rpi-resize-var-swap-service
