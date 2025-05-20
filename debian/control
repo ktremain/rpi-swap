@@ -24,23 +24,3 @@ Conflicts: dphys-swapfile
 Replaces: dphys-swapfile
 Description: resizes /var/swap on boot
  Oneshot service that resizes swap file
-
-Package: rpi-loop-var-swap
-Architecture: all
-Provides: dphys-swapfile
-Conflicts: dphys-swapfile
-Replaces: dphys-swapfile
-Depends: rpi-symlink-loop-devices
-Description: makes the swap file available as a block device
- RaspiOS, by default, makes use of the /var/swap file (rather than using a
- block device). This package makes the swap file available as the
- /dev/disk/by-backingfile/-var-swap block device for software requiring
- block-based swap.
- This package conflicts with dphys-swapfile as it is not possible to
- simultaneously use /var/swap as a swap file.
-
-Package: rpi-zram-swap
-Architecture: all
-Depends: systemd-zram-generator, rpi-loop-var-swap
-Description: config for Zram-swap with a backing file
- Raspberry Pi's Zram-backed swap configuration.
