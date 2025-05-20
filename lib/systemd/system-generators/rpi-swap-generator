@@ -197,7 +197,7 @@ elif [ "${CONF_MECHANISM}" = "zram+file" ]; then
   setup_zram_mechanism "zram+file"
   # TODO: There's no swapfile resize logic currently for this case
 elif [ "${CONF_SWAPSIZE}" -ne 0 ]; then # Assumed 'swapfile' case
-  create_swap_unit "${CONF_SWAPFILE}" "rpi-resize-var-swap-service.service"
+  create_swap_unit "${CONF_SWAPFILE}" "rpi-resize-swap-file.service"
 elif [ -f "${CONF_SWAPFILE}" ]; then
   create_remove_swap_file_service "${CONF_SWAPFILE}"
 fi

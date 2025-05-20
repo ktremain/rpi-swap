@@ -3,4 +3,4 @@ bin/rpi-resize-swap-file bin/
 etc/rpi-swap/swap.conf etc/rpi-swap/
 lib/systemd/system-generators/rpi-swap-generator lib/systemd/system-generators/
 lib/systemd/zram-generator.conf.d/70-rpi-disable-zram.conf lib/systemd/zram-generator.conf.d
-lib/systemd/system/rpi-resize-var-swap-service.service lib/systemd/system
+lib/systemd/system/rpi-resize-swap-file.service lib/systemd/system
