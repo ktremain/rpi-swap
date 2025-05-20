@@ -6,4 +6,4 @@ Requires=systemd-remount-fs.service
 
 [Service]
 Type=oneshot
-ExecStart=/bin/rpi-resize-swap-file
+ExecStart=/usr/lib/rpi-swap/bin/rpi-resize-swap-file

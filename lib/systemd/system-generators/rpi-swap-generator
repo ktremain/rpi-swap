@@ -5,7 +5,7 @@
 set -e
 
 : "${CONFIG_FILE:=/etc/rpi-swap/swap.conf}"
-: "${SWAP_FILE_SIZE_CALC_BIN:=/bin/rpi-desired-swap-size}"
+: "${SWAP_FILE_SIZE_CALC_BIN:=/usr/lib/rpi-swap/bin/rpi-desired-swap-size}"
 
 # Function to create a service that removes the swap file
 create_remove_swap_file_service() {

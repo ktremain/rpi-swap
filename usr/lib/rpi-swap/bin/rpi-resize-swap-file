@@ -3,7 +3,7 @@
 set -e
 
 : "${CONFIG_FILE:=/etc/rpi-swap/swap.conf}"
-: "${SWAP_FILE_SIZE_CALC_BIN:=/bin/rpi-desired-swap-size}"
+: "${SWAP_FILE_SIZE_CALC_BIN:=/usr/lib/rpi-swap/bin/rpi-desired-swap-size}"
 
 : "${CONF_SWAPFILE:=/var/swap}"
 eval "$( \
