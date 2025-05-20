@@ -46,3 +46,17 @@ systemctl status swap.target
 
 No customisation for zram swap is currently supported in
 the configuration file.
+
+Package removal: installing 'rpi-swap' pulls in
+systemd-zram-generator as a dependency.
+systemd-zram-generator enables zram0 swap by default (due
+to the /etc/systemd/zram-generator.conf) that it ships
+with. 'rpi-swap' prevents zram swap from being enabled by
+shipping
+'/lib/systemd/zram-generator.conf.d/70-rpi-disable-zram.conf'.
+If the 'rpi-swap' package is removed but
+'systemd-zram-generator' remains (i.e. because autoremove
+is not run) then zram will be enabled. This is perhaps not
+an issue if 'rpi-swap' is treated as a base package (i.e.
+replacing dphys-swapfile and is expected to never be
+removed)
