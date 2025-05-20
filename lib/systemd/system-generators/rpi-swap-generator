@@ -112,6 +112,15 @@ writeback-device=${LOOP_DEVICE}"
 
     # Add loop device to bindings
     bindings="${bindings} rpi-setup-loop@${BACKING_FILE}.service"
+
+    # Create a drop-in for the loop service to ensure the swap file is resized
+    create_systemd_drop_in \
+      "generator" \
+      "rpi-setup-loop@${BACKING_FILE}.service" \
+      "resize-swap.conf" \
+      "[Unit]
+Requires=rpi-resize-swap-file.service
+After=rpi-resize-swap-file.service"
   fi
 
   # Create zram configuration
@@ -195,7 +204,6 @@ if [ "${CONF_MECHANISM}" = "zram" ]; then
   fi
 elif [ "${CONF_MECHANISM}" = "zram+file" ]; then
   setup_zram_mechanism "zram+file"
-  # TODO: There's no swapfile resize logic currently for this case
 elif [ "${CONF_SWAPSIZE}" -ne 0 ]; then # Assumed 'swapfile' case
   create_swap_unit "${CONF_SWAPFILE}" "rpi-resize-swap-file.service"
 elif [ -f "${CONF_SWAPFILE}" ]; then
