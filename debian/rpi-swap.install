@@ -1,5 +1,5 @@
 usr/lib/rpi-swap/bin/* usr/lib/rpi-swap/bin
-etc/rpi-swap/swap.conf etc/rpi-swap/
+etc/rpi/swap.conf etc/rpi/
 lib/systemd/system-generators/rpi-swap-generator lib/systemd/system-generators/
 lib/systemd/zram-generator.conf.d/70-rpi-disable-zram.conf lib/systemd/zram-generator.conf.d
 lib/systemd/system/rpi-resize-swap-file.service lib/systemd/system
