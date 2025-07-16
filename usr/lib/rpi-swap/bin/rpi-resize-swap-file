@@ -2,19 +2,16 @@
 
 set -e
 
-: "${CONFIG_FILE:=/etc/rpi-swap/swap.conf}"
 : "${SWAP_FILE_SIZE_CALC_BIN:=/usr/lib/rpi-swap/bin/rpi-desired-swap-size}"
 
 : "${CONF_SWAPFILE:=/var/swap}"
 eval "$( \
-  apt-config \
-    --config-file "${CONFIG_FILE}" \
-    shell \
-      CONF_SWAPFILE      RpiSwap::Swapfile::Path \
-      CONF_SWAPFACTOR    RpiSwap::Swapfile::SwapFactor \
-      CONF_MAXDISK_PCT   RpiSwap::Swapfile::MaxDiskPct \
-      CONF_MAXSWAP       RpiSwap::Swapfile::MaxSwap \
-      CONF_SWAPSIZE      RpiSwap::Swapfile::SwapSize
+  rpi-systemd-config rpi/swap.conf \
+    CONF_SWAPFILE      Swapfile::Path \
+    CONF_SWAPFACTOR    Swapfile::SwapFactor \
+    CONF_MAXDISK_PCT   Swapfile::MaxDiskPct \
+    CONF_MAXSWAP       Swapfile::MaxSwap \
+    CONF_SWAPSIZE      Swapfile::SwapSize \
 )"
 export \
   CONF_SWAPFILE \

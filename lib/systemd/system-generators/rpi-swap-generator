@@ -4,7 +4,7 @@
 
 set -e
 
-: "${CONFIG_FILE:=/etc/rpi-swap/swap.conf}"
+: "${CONFIG_FILE:=/etc/rpi/swap.conf}"
 : "${SWAP_FILE_SIZE_CALC_BIN:=/usr/lib/rpi-swap/bin/rpi-desired-swap-size}"
 
 # Function to create a service that removes the swap file
@@ -143,15 +143,13 @@ After=rpi-resize-swap-file.service"
 
 : "${CONF_SWAPFILE:=/var/swap}"
 eval "$( \
-  apt-config \
-    --config-file "${CONFIG_FILE}" \
-    shell \
-      CONF_MECHANISM     RpiSwap::Mechanism \
-      CONF_SWAPFILE      RpiSwap::Swapfile::Path \
-      CONF_SWAPFACTOR    RpiSwap::Swapfile::SwapFactor \
-      CONF_MAXDISK_PCT   RpiSwap::Swapfile::MaxDiskPct \
-      CONF_MAXSWAP       RpiSwap::Swapfile::MaxSwap \
-      CONF_SWAPSIZE      RpiSwap::Swapfile::SwapSize
+  rpi-systemd-config rpi/swap.conf \
+    CONF_MECHANISM     RpiSwap::Mechanism \
+    CONF_SWAPFILE      Swapfile::Path \
+    CONF_SWAPFACTOR    Swapfile::SwapFactor \
+    CONF_MAXDISK_PCT   Swapfile::MaxDiskPct \
+    CONF_MAXSWAP       Swapfile::MaxSwap \
+    CONF_SWAPSIZE      Swapfile::SwapSize \
 )"
 
 # Set default mechanism to "auto" if not specified in config
