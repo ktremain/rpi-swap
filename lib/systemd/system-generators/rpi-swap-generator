@@ -166,16 +166,9 @@ case "${CONF_MECHANISM}" in
     ;;
 esac
 
-# Handle auto mechanism by checking device tree
+# Handle auto mechanism
 if [ "${CONF_MECHANISM}" = "auto" ]; then
-  # Check if we're on BCM2710 lineage (Raspberry Pi 3 and derivatives)
-  if [ -f "/proc/device-tree/compatible" ] && grep -q "bcm2710" "/proc/device-tree/compatible"; then
-    # BCM2710 detected - use zram+file
-    CONF_MECHANISM="zram+file"
-  else
-    # Not BCM2710 or can't determine - use swapfile
-    CONF_MECHANISM="swapfile"
-  fi
+  CONF_MECHANISM="zram+file"
 fi
 
 # For 'zram' mechanism, we don't need a swap file at all

@@ -35,7 +35,7 @@ All options are configured in either the [RpiSwap] or [Swapfile] sections.
 Controls which swap mechanism to use. One of "auto", "swapfile", "zram", and "zram+file".
 .RS
 .IP \(bu 2
-\fBauto\fR: Automatically selects the best mechanism. For systems with the BCM2710 SoC (Raspberry Pi 3 and later), this defaults to "zram+file". For all other systems, it defaults to "swapfile".
+\fBauto\fR: Automatically selects the most appropriate mechanism. At present, this defaults to "zram+file", but the default may change in future releases. If you require a specific mechanism to always be used, set it explicitly.
 .IP \(bu 2
 \fBswapfile\fR: A traditional swap file is created on the root filesystem.
 .IP \(bu 2
