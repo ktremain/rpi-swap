@@ -17,13 +17,17 @@ swap.conf, swap.conf.d \- Raspberry Pi swap management configuration files
 These files configure various parameters of the Raspberry Pi swap management scripts. See systemd.syntax(7) for a general description of the syntax.
 
 .SH CONFIGURATION DIRECTORIES AND PRECEDENCE
-The default configuration is set in the swap management scripts, so configuration is only needed when it is necessary to deviate from those defaults. The main configuration file is loaded from /etc/rpi/swap.conf.
+The default configuration is defined in the swap management scripts, so configuration is only needed when it is necessary to deviate from those defaults. The rpi-swap package ships with a main configuration file at /etc/rpi/swap.conf. In general, the main configuration file is loaded from one of the listed directories in order of priority, only the first file found is used: /etc/rpi/, /run/rpi/, /usr/local/lib/rpi/, /usr/lib/rpi/. The vendor version of the file contains commented out entries showing the defaults as a guide to the administrator.
 
-Local overrides can also be created by creating drop-ins. The main configuration file can also be edited for this purpose, however using drop-ins for local configuration is recommended over modifications to the main configuration file.
+Local overrides can be created by editing the main configuration file at /etc/rpi/swap.conf directly, or by creating drop-ins as described below. However, using drop-ins for local configuration is recommended over modifications to the main configuration file.
 
-Drop-in configuration snippets are read from /etc/rpi/swap.conf.d/*.conf. Those drop-ins have higher precedence and override the main configuration file. Files in the *.conf.d/ configuration subdirectories are sorted by their filename in lexicographic order. When multiple files specify the same option, for options which accept just a single value, the entry in the file sorted last takes precedence.
+In addition to the main configuration file, drop-in configuration snippets are read from /usr/lib/rpi/swap.conf.d/*.conf, /usr/local/lib/rpi/swap.conf.d/*.conf, /run/rpi/swap.conf.d/*.conf, and /etc/rpi/swap.conf.d/*.conf. Those drop-ins have higher precedence and override the main configuration file. Files in the *.conf.d/ configuration subdirectories are sorted by their filename in lexicographic order, regardless of in which of the subdirectories they reside. When multiple files specify the same option, for options which accept just a single value, the entry in the file sorted last takes precedence.
+
+Files in /etc/ are reserved for the local administrator, who may use this logic to override the configuration files installed by vendor packages. It is recommended to prefix all filenames in the *.conf.d/ subdirectories with a two-digit number and a dash, to simplify the ordering.
 
 To disable a configuration file supplied by the vendor, the recommended way is to place a symlink to /dev/null in the configuration directory in /etc/, with the same filename as the vendor configuration file.
+
+For a complete description of the configuration loading rules, see the 'CONFIGURATION DIRECTORIES AND PRECEDENCE' section of system.conf.d(5).
 
 .SH OPTIONS
 All options are configured in either the [RpiSwap] or [Swapfile] sections.
@@ -68,6 +72,21 @@ The maximum percentage of available disk space to use for the swap file, to prev
 .TP
 \fBSwapSize=\fR
 An explicit swap size in MiB. If set, this value overrides the \fBSwapFactor\fR calculation and is used directly.
+
+.SH EXAMPLES
+.SS "Example 1. Ensuring a traditional swapfile is used"
+
+To override the default swap mechanism and force the use of a traditional swapfile, create the drop-in directory and configuration file:
+
+.nf
+sudo mkdir -p /etc/rpi/swap.conf.d/
+sudo tee /etc/rpi/swap.conf.d/80-use-swapfile.conf > /dev/null <<EOF
+[RpiSwap]
+Mechanism=swapfile
+EOF
+.fi
+
+This drop-in configuration file will override the default "auto" mechanism and ensure that a traditional swapfile is always used instead of the default compressed RAM-based swap device.
 
 .SH SEE ALSO
 \fBsystemd.syntax\fR(7), \fBrpi-swap-generator\fR(8)
