@@ -1,0 +1,47 @@
+.TH RPI-SWAP-GENERATOR 8 "rpi-swap" "rpi-swap System Administration"
+
+.SH NAME
+rpi-swap-generator \- systemd generator for Raspberry Pi swap management
+
+.SH SYNOPSIS
+/lib/systemd/system-generators/rpi-swap-generator
+
+.SH DESCRIPTION
+\fBrpi-swap-generator\fR is a systemd generator that automatically configures swap during early boot based on system requirements and user preferences. It is part of the rpi-swap package designed specifically for Raspberry Pi systems.
+
+The generator dynamically creates systemd units to implement various swap mechanisms, including traditional swap files, compressed RAM-based swap (zram), and hybrid approaches. A key feature is its ability to resize swap files during early boot, which is crucial for memory-constrained systems where performing swapoff/resize/swapon operations later might not be possible or desirable.
+
+.SH KEY FEATURES
+.TP
+\fBDynamic swap sizing\fR
+Automatically calculates appropriate swap sizes based on available memory and storage.
+
+.TP
+\fBEarly boot resize\fR
+Resizes swap files during early boot before they are activated, avoiding memory pressure during resize operations.
+
+.TP
+\fBMultiple swap mechanisms\fR
+Supports traditional swap files, zram compression, and hybrid zram+file approaches.
+
+.TP
+\fBAutomatic writeback\fR
+For hybrid configurations, implements intelligent writeback of less active pages from compressed memory to storage.
+
+.SH CONFIGURATION
+Configuration is handled through \fBswap.conf\fR(5). The generator reads this configuration and creates the appropriate systemd units automatically.
+
+.SH FILES
+.TP
+\fI/etc/rpi/swap.conf\fR
+Main configuration file.
+
+.TP
+\fI/lib/systemd/system-generators/rpi-swap-generator\fR
+The generator script itself.
+
+.SH SEE ALSO
+\fBswap.conf\fR(5), \fBsystemd.generator\fR(7), \fBsystemd.swap\fR(5)
+
+.SH NOTES
+This generator is invoked automatically by systemd during boot. Manual invocation is generally not necessary unless testing configuration changes.

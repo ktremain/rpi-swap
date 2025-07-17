@@ -4,14 +4,7 @@
 swap.conf, swap.conf.d \- Raspberry Pi swap management configuration files
 
 .SH SYNOPSIS
-/etc/rpi/swap.conf
-/run/rpi/swap.conf
-/usr/local/lib/rpi/swap.conf
-/usr/lib/rpi/swap.conf
-/etc/rpi/swap.conf.d/*.conf
-/run/rpi/swap.conf.d/*.conf
-/usr/local/lib/rpi/swap.conf.d/*.conf
-/usr/lib/rpi/swap.conf.d/*.conf
+/etc/rpi/swap.conf, /run/rpi/swap.conf, /usr/local/lib/rpi/swap.conf, /usr/lib/rpi/swap.conf, /etc/rpi/swap.conf.d/*.conf, /run/rpi/swap.conf.d/*.conf, /usr/local/lib/rpi/swap.conf.d/*.conf, /usr/lib/rpi/swap.conf.d/*.conf
 
 .SH DESCRIPTION
 These files configure various parameters of the Raspberry Pi swap management scripts. See systemd.syntax(7) for a general description of the syntax.
@@ -30,7 +23,7 @@ To disable a configuration file supplied by the vendor, the recommended way is t
 For a complete description of the configuration loading rules, see the 'CONFIGURATION DIRECTORIES AND PRECEDENCE' section of system.conf.d(5).
 
 .SH OPTIONS
-All options are configured in either the [RpiSwap] or [Swapfile] sections.
+All options are configured in the [RpiSwap], [Swapfile], or [ZramWriteback] sections.
 
 .SS "[RpiSwap] Section Options"
 
@@ -72,6 +65,45 @@ The maximum percentage of available disk space to use for the swap file, to prev
 .TP
 \fBSwapSize=\fR
 An explicit swap size in MiB. If set, this value overrides the \fBSwapFactor\fR calculation and is used directly.
+
+.SS "[ZramWriteback] Section Options"
+These options control the writeback behaviour for the "zram+file" mechanism. Writeback allows zram to move less frequently accessed pages to the backing swap file, improving memory efficiency. These options are ignored for other mechanisms.
+
+.TP
+\fBTrigger=\fR
+Controls how zram writeback is triggered. One of "auto", "manual", and "timer".
+.RS
+.IP \(bu 2
+\fBauto\fR: Automatically determines the most appropriate writeback strategy. At present, this defaults to "timer", but the default may change in future releases.
+.IP \(bu 2
+\fBmanual\fR: Prepares the system for writeback by marking pages as idle, but leaves writeback initiation to manual user intervention. Users can trigger writeback by writing to /sys/block/zram0/writeback as needed.
+.IP \(bu 2
+\fBtimer\fR: Uses a systemd timer to periodically trigger writeback operations at configured intervals.
+.RE
+.IP
+Defaults to "\fBauto\fR".
+
+.TP
+\fBInitialDelay=\fR
+The time to wait after system boot before performing the first writeback operation when using the "timer" trigger. This allows the system to settle and identifies pages that are genuinely less frequently accessed. Takes a time span value. See \fBsystemd.time\fR(7) for details on the syntax. This setting is ignored for other triggers. Defaults to "\fB180min\fR".
+
+.TP
+\fBPeriodicInterval=\fR
+The interval between subsequent writeback operations when using the "timer" trigger. This determines how frequently zram will write back less active pages to the backing swap file. Takes a time span value. See \fBsystemd.time\fR(7) for details on the syntax. This setting is ignored for other triggers. Defaults to "\fB24h\fR".
+
+.SH MONITORING WRITEBACK TIMERS
+When using the "timer" writeback initiator, you can monitor the timer status and next scheduled execution using systemctl:
+
+.nf
+systemctl list-timers rpi-zram-writeback.timer
+.fi
+
+This command shows when the timer last triggered, when it will next trigger, and how long until the next execution. The timer and service status can also be checked individually:
+
+.nf
+systemctl status rpi-zram-writeback.timer
+systemctl status rpi-zram-writeback.service
+.fi
 
 .SH EXAMPLES
 .SS "Example 1. Ensuring a traditional swapfile is used"

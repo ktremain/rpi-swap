@@ -1,2 +1,4 @@
 man/man5/swap.conf.5
 man/man5/swap.conf.d.5
+man/man8/rpi-swap.8
+man/man8/rpi-swap-generator.8
