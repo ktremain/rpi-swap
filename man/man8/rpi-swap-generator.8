@@ -31,6 +31,28 @@ For hybrid configurations, implements intelligent writeback of less active pages
 .SH CONFIGURATION
 Configuration is handled through \fBswap.conf\fR(5). The generator reads this configuration and creates the appropriate systemd units automatically.
 
+.SH MONITORING
+To monitor the swap units created by the generator and verify they are functioning correctly, use:
+
+.PP
+.RS
+\fBsystemctl list-units --type swap\fR
+.RE
+
+This command shows all active swap units, their status, and whether they have reached the swap.target. You can also check the overall swap target status:
+
+.PP
+.RS
+\fBsystemctl status swap.target\fR
+.RE
+
+For hybrid configurations with writeback timers, monitor the writeback operations using:
+
+.PP
+.RS
+\fBsystemctl list-timers rpi-zram-writeback.timer\fR
+.RE
+
 .SH FILES
 .TP
 \fI/etc/rpi/swap.conf\fR
