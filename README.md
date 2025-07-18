@@ -1,62 +1,75 @@
-# How to use
+# rpi-swap
 
-Internally:
-```
-dpkg-buildpackage -b -uc -us
-sudo apt install ../rpi-{loop-utils,swap}_0.0.1_all.deb
-```
+Modern swap management for Raspberry Pi systems, designed to replace `dphys-swapfile` with a more flexible and efficient approach.
 
-*REBOOT*
+## What is rpi-swap?
 
-rpi-swap replaces dphys-swap. It's (self-documenting) configuration file is in /etc/rpi-swap/swap.conf
+The `rpi-swap` package provides intelligent swap configuration that adapts to your Raspberry Pi's memory and storage setup. It offers multiple swap mechanisms and integrates seamlessly with systemd's modern service management.
 
-The configuration is parsed during very early boot by
-/lib/systemd/system-generators/rpi-swap-generator and unit
-files are generated.
+### Key Features
 
-rpi-swap currently supports 'swapfile', 'zram',
-'zram+swap', and 'auto'. The default configuration is
-'auto' as this will allow us to freely make changes to
-configuration based on device-class going forwards.
+- **Dynamic sizing**: Automatically calculates optimal swap size based on available RAM and storage
+- **Multiple swap types**: Supports compressed RAM swap (zram), file-based swap, or hybrid combinations
+- **Early boot integration**: Swap is available immediately during the boot process when memory pressure is highest
+- **Storage-aware**: Intelligently chooses swap mechanisms based on your storage type (SD card vs USB/SSD)
+- **systemd integration**: Full integration with systemd's swap.target for reliable service dependencies
+- **Zero-configuration**: Works out of the box with sensible defaults for most Raspberry Pi setups
 
-rpi-loop-utils uses udev to create /dev/disk/by-backingfile
-symlinks when loop devices are setup. It also provides a
-templated systemd service for setting up specific files on
-loop devices (such as /var/swap)
+## How it Works
 
-Is it working (zram+file)?
-```
-# Is zram0 being used as swap?
-grep --quiet '/dev/zram0' /proc/swaps && echo "OK" || echo "FAIL"
+The system offers three main swap mechanisms:
 
-# Is /dev/loop0 being used as zram0's backing device?
-grep --quiet '/dev/loop0' /sys/block/zram0/backing_dev && echo "OK" || echo "FAIL"
+**🗜️ Compressed RAM Swap (zram)**
+Uses a portion of your RAM to create compressed swap space. Ideal for systems with limited storage or SD cards where you want to minimise write wear.
 
-# Is /var/swap the file behind /dev/loop0?
-grep --quiet '/var/swap' /sys/block/loop0/loop/backing_file && echo "OK" || echo "FAIL"
+**💾 File-based Swap**
+Traditional swap file on disk storage. Best for systems with fast storage like USB drives or SSDs where you want maximum swap capacity.
 
-# Does systemd think the swap unit is working?
-systemctl status dev-zram0.swap
+**🔄 Hybrid (zram + file)**
+Combines both approaches - compressed RAM swap for immediate needs, with a backing file that allows idle pages to be moved out of zram over time. This frees up precious zram space for active use, making it particularly beneficial on memory-constrained systems.
 
-# Has the swap target been reached?
-systemctl status swap.target
-```
+## What's Included
 
-# Known Issues
+### rpi-swap (main package)
+The core swap management system that:
+- Automatically detects your system's memory and storage configuration
+- Creates and manages swap devices during early boot
+- Provides writeback capabilities to move data from compressed RAM to storage when beneficial
+- Replaces the functionality of `dphys-swapfile` with a more modern approach
 
-No customisation for zram swap is currently supported in
-the configuration file.
+### rpi-loop-utils (supporting package)
+Infrastructure for reliable loop device management:
+- Creates stable, persistent names for loop devices based on their backing files
+- Ensures loop devices can be reliably referenced in systemd units and scripts
+- Provides the foundation for file-based swap functionality
 
-Package removal: installing 'rpi-swap' pulls in
-systemd-zram-generator as a dependency.
-systemd-zram-generator enables zram0 swap by default (due
-to the /etc/systemd/zram-generator.conf) that it ships
-with. 'rpi-swap' prevents zram swap from being enabled by
-shipping
-'/lib/systemd/zram-generator.conf.d/20-rpi-swap-zram0-ctrl.conf'.
-If the 'rpi-swap' package is removed but
-'systemd-zram-generator' remains (i.e. because autoremove
-is not run) then zram will be enabled. This is perhaps not
-an issue if 'rpi-swap' is treated as a base package (i.e.
-replacing dphys-swapfile and is expected to never be
-removed)
+## Why Replace dphys-swapfile?
+
+While `dphys-swapfile` has served Raspberry Pi well, modern systems benefit from:
+
+- **Better memory utilisation**: zram compression uses spare CPU cycles to make better use of your available RAM
+- **Reduced storage wear**: Especially important for SD card longevity
+- **Faster swap performance**: Compressed RAM swap is much faster than disk-based swap
+- **Modern systemd integration**: Full integration with systemd's swap.target and service dependencies
+- **Multiple swap mechanisms**: Choose the best approach for your specific hardware and use case
+- **Hybrid capabilities**: Advanced writeback features to optimise memory usage over time
+
+## Configuration
+
+For most users, rpi-swap works automatically with no configuration required.
+
+Advanced configuration is available through configuration drop-ins as documented in `swap.conf(5)` and will typically be managed through `raspi-config` in future Raspberry Pi OS releases.
+
+## System Requirements
+
+- Raspberry Pi running a systemd-based Linux distribution
+- systemd-zram-generator package (automatically installed as dependency)
+- Modern kernel with zram support (standard in Raspberry Pi OS)
+
+## Status
+
+This package is designed to be included by default in future Raspberry Pi OS releases as the standard swap management solution, providing better performance and reliability than the current `dphys-swapfile` approach.
+
+---
+
+*For technical documentation, see the included manual pages: `man rpi-swap-generator` and `man swap.conf`*
