@@ -1,0 +1,36 @@
+#!/bin/sh
+set -e
+
+case "$1" in
+    remove)
+        echo ""
+        echo "==============================================================================="
+        echo "IMPORTANT: Remove systemd-zram-generator"
+        echo "==============================================================================="
+        echo ""
+        echo "rpi-swap has been removed. systemd-zram-generator is no longer needed and"
+        echo "will now provide default zram0 swap (which you probably don't want)."
+        echo ""
+        echo "You should remove systemd-zram-generator unless you believe it is being"
+        echo "used by other packages:"
+        echo ""
+        echo "  sudo apt remove systemd-zram-generator"
+        echo ""
+        echo "If other packages depend on it, apt will warn you and you can cancel."
+        echo ""
+        echo "==============================================================================="
+        echo ""
+        ;;
+    purge)
+        ;;
+    upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)
+        ;;
+    *)
+        echo "postrm called with unknown argument \`$1'" >&2
+        exit 1
+        ;;
+esac
+
+#DEBHELPER#
+
+exit 0
