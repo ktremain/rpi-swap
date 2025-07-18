@@ -167,7 +167,7 @@ After=rpi-resize-swap-file.service"
   create_systemd_drop_in \
     "zram-generator.conf.d" \
     "" \
-    "80-rpi-enable.zram.conf" \
+    "20-rpi-swap-zram0-ctrl.conf" \
     "${zram_config}"
 
   # Create a swap unit

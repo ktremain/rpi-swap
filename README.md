@@ -53,7 +53,7 @@ systemd-zram-generator enables zram0 swap by default (due
 to the /etc/systemd/zram-generator.conf) that it ships
 with. 'rpi-swap' prevents zram swap from being enabled by
 shipping
-'/lib/systemd/zram-generator.conf.d/70-rpi-disable-zram.conf'.
+'/lib/systemd/zram-generator.conf.d/20-rpi-swap-zram0-ctrl.conf'.
 If the 'rpi-swap' package is removed but
 'systemd-zram-generator' remains (i.e. because autoremove
 is not run) then zram will be enabled. This is perhaps not

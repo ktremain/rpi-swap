@@ -1,0 +1,62 @@
+.TH 20-RPI-SWAP-ZRAM0-CTRL.CONF 5 "rpi-swap" "rpi-swap Configuration"
+
+.SH NAME
+20-rpi-swap-zram0-ctrl.conf \- zram0 control configuration for rpi-swap
+
+.SH SYNOPSIS
+/usr/lib/systemd/zram-generator.conf.d/20-rpi-swap-zram0-ctrl.conf, /run/systemd/zram-generator.conf.d/20-rpi-swap-zram0-ctrl.conf
+
+.SH DESCRIPTION
+This configuration file controls the zram0 device behaviour when the rpi-swap package is installed alongside systemd-zram-generator. It serves to override the default zram0 configuration that systemd-zram-generator provides.
+
+The rpi-swap package depends on systemd-zram-generator, which ships with a default configuration file at \fI/usr/lib/systemd/zram-generator.conf\fR that enables zram0 by default. Since rpi-swap manages swap configuration independently, this default behaviour must be disabled to prevent conflicts.
+
+.SH OPERATION
+The configuration works through systemd's drop-in override mechanism:
+
+.TP
+\fBStatic Configuration\fR (/usr/lib/)
+The rpi-swap package ships a static version of \fB20-rpi-swap-zram0-ctrl.conf\fR in \fI/usr/lib/systemd/zram-generator.conf.d/\fR that disables zram0 by setting \fBhost-memory-limit=0\fR and \fBfs-type=none\fR.
+
+.TP
+\fBDynamic Configuration\fR (/run/)
+When the rpi-swap generator determines that zram functionality is needed (for "zram" or "zram+file" mechanisms), it creates a dynamic version in \fI/run/systemd/zram-generator.conf.d/\fR that re-enables zram0 with the appropriate configuration.
+
+.SH PRECEDENCE
+Due to systemd's configuration loading order:
+1. \fI/usr/lib/systemd/zram-generator.conf\fR (systemd-zram-generator default - enables zram0)
+2. \fI/usr/lib/systemd/zram-generator.conf.d/20-rpi-swap-zram0-ctrl.conf\fR (rpi-swap static - disables zram0)
+3. \fI/run/systemd/zram-generator.conf.d/20-rpi-swap-zram0-ctrl.conf\fR (rpi-swap dynamic - conditionally enables zram0)
+
+The final configuration is determined by the last file in this sequence, giving rpi-swap complete control over zram0 behaviour.
+
+.SH VERIFICATION
+To verify which configuration files are currently being used by systemd-zram-generator and see the effective configuration, use:
+
+.PP
+.RS
+\fBsystemd-analyze cat-config systemd/zram-generator.conf\fR
+.RE
+
+This command displays all relevant configuration files in load order, clearly showing which files contribute to the final zram configuration and highlighting any overrides.
+
+.SH FILES
+.TP
+\fI/usr/lib/systemd/zram-generator.conf\fR
+Default systemd-zram-generator configuration (enables zram0).
+
+.TP
+\fI/usr/lib/systemd/zram-generator.conf.d/20-rpi-swap-zram0-ctrl.conf\fR
+Static rpi-swap configuration (disables zram0).
+
+.TP
+\fI/run/systemd/zram-generator.conf.d/20-rpi-swap-zram0-ctrl.conf\fR
+Dynamic rpi-swap configuration (conditionally enables zram0).
+
+.SH SEE ALSO
+\fBswap.conf\fR(5), \fBrpi-swap-generator\fR(8), \fBsystemd-zram-generator\fR(8), \fBzram-generator.conf\fR(5)
+
+.SH NOTES
+This file should not be manually edited. The static version is managed by the package, and the dynamic version is automatically generated based on \fBswap.conf\fR(5) settings.
+
+If the rpi-swap package is removed but systemd-zram-generator remains installed, the static override will be removed and zram0 will revert to the systemd-zram-generator default behaviour.
