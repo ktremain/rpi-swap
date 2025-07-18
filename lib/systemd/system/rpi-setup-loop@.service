@@ -6,6 +6,6 @@ After=sysinit.target
 
 [Service]
 Type=oneshot
-ExecStart=/bin/sh -c "/sbin/losetup -f $(systemd-escape --unescape --path %i)"
+ExecStart=/sbin/losetup -f /%I
 ExecStop=/sbin/losetup -d /dev/disk/by-backingfile/%i
 RemainAfterExit=yes
