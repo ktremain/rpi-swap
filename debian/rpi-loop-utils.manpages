@@ -1,0 +1,3 @@
+man/man7/70-rpi-symlink-loop-devices.rules.7
+man/man8/rpi-loop-device-namer.8
+man/man8/rpi-setup-loop@.service.8

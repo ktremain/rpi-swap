@@ -1,0 +1,82 @@
+.TH RPI-SETUP-LOOP@.SERVICE 8 "rpi-loop-utils" "rpi-loop-utils System Administration"
+
+.SH NAME
+rpi-setup-loop@.service \- systemd template service for loop device management
+
+.SH SYNOPSIS
+rpi-setup-loop@{device}.service
+
+.SH DESCRIPTION
+\fBrpi-setup-loop@.service\fR is a systemd template service that manages the lifecycle of loop devices by setting up and tearing down loop devices for specified backing files. The service uses the systemd instance name to determine which file to attach to a loop device.
+
+The service is designed to run during early boot with minimal dependencies, making it suitable for setting up loop devices that other services depend on, such as swap files or disk images.
+
+.SH LIFECYCLE
+.SS "Service Start (ExecStart)"
+When the service starts:
+.IP 1. 4
+The systemd instance name is unescaped using \fBsystemd-escape --unescape --path\fR
+.IP 2. 4
+\fBlosetup -f\fR finds the first available loop device
+.IP 3. 4
+The backing file is attached to the loop device
+.IP 4. 4
+The \fB70-rpi-symlink-loop-devices.rules\fR(7) udev rule automatically creates a stable symlink
+
+.SS "Service Stop (ExecStop)"
+When the service stops:
+.IP 1. 4
+The service uses the stable symlink created by \fB70-rpi-symlink-loop-devices.rules\fR(7)
+.IP 2. 4
+\fBlosetup -d\fR detaches the loop device
+.IP 3. 4
+The udev rule automatically removes the corresponding symlink
+
+.SH INSTANCE NAMING
+The service uses systemd-escaped file paths as instance names. For example:
+
+.TP
+\fBrpi-setup-loop@home-pi-backup\\x2ddisk.img.service\fR
+Sets up a loop device for \fI/home/pi/backup-disk.img\fR
+
+.TP
+\fBrpi-setup-loop@mnt-data-image.iso.service\fR
+Sets up a loop device for \fI/mnt/data/image.iso\fR
+
+Use \fBsystemd-escape --path\fR to generate the correct instance name for a given file path.
+
+.SH DEPENDENCIES
+The service has minimal dependencies to ensure early availability:
+.TP
+\fBRequires=sysinit.target\fR
+Ensures basic system initialisation is complete
+.TP
+\fBAfter=sysinit.target\fR
+Waits for system initialisation before starting
+.TP
+\fBDefaultDependencies=no\fR
+Disables default systemd dependencies for early boot operation
+
+.SH EXAMPLES
+.SS "Setting up a disk image"
+.nf
+# Enable the service using systemd-escape to generate the correct name
+sudo systemctl enable "rpi-setup-loop@$(systemd-escape --path /home/pi/backup-disk.img).service"
+
+# Start the service (note the backslash escaping for the shell)
+sudo systemctl start "rpi-setup-loop@home-pi-backup\\x2ddisk.img.service"
+
+# The loop device is now available as:
+# /dev/disk/by-backingfile/home-pi-backup\x2ddisk.img -> /dev/loop<N>
+.fi
+
+.SH FILES
+.TP
+\fI/usr/lib/systemd/system/rpi-setup-loop@.service\fR
+The systemd template service file.
+
+.SH SEE ALSO
+\fB70-rpi-symlink-loop-devices.rules\fR(7), \fBsystemd.service\fR(5), \fBlosetup\fR(8), \fBsystemd-escape\fR(1), \fBsystemd.swap\fR(5)
+
+.SH NOTES
+The service uses \fBRemainAfterExit=yes\fR to ensure systemd considers it active after the loop device is set up, even though the setup command completes immediately. This allows proper dependency tracking for other services that require the loop device.

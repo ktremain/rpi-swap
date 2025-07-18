@@ -1,0 +1,61 @@
+.TH RPI-LOOP-DEVICE-NAMER 8 "rpi-loop-utils" "rpi-loop-utils System Administration"
+
+.SH NAME
+rpi-loop-device-namer \- generate stable names for loop device symlinks
+
+.SH SYNOPSIS
+\fBrpi-loop-device-namer\fR \fIMINOR_NUMBER\fR
+
+.SH DESCRIPTION
+\fBrpi-loop-device-namer\fR is a utility script that generates stable symbolic link names for loop devices based on their backing files. It is primarily intended to be called by udev rules to create persistent device names.
+
+The script takes a loop device minor number as input and outputs a systemd-escaped path suitable for use in \fI/dev/disk/by-backingfile/\fR symlinks.
+
+.SH ARGUMENTS
+.TP
+\fIMINOR_NUMBER\fR
+The minor device number of the loop device (e.g., "0" for /dev/loop0, "1" for /dev/loop1).
+
+.SH OUTPUT
+If the specified loop device has an associated backing file, the script outputs:
+.nf
+disk/by-backingfile/\fIESCAPED_PATH\fR
+.fi
+
+Where \fIESCAPED_PATH\fR is the systemd-escaped version of the backing file path.
+
+If the loop device has no backing file, no output is produced.
+
+.SH EXAMPLES
+.SS "Loop device with backing file /var/swap:"
+.nf
+$ rpi-loop-device-namer 0
+disk/by-backingfile/var-swap
+.fi
+
+.SS "Loop device with backing file /home/pi/disk.img:"
+.nf
+$ rpi-loop-device-namer 1
+disk/by-backingfile/home-pi-disk.img
+.fi
+
+.SS "Unbound loop device:"
+.nf
+$ rpi-loop-device-namer 2
+(no output)
+.fi
+
+.SH FILES
+.TP
+\fI/usr/lib/rpi-loop-utils/bin/rpi-loop-device-namer\fR
+The script itself.
+
+.TP
+\fI/sys/block/loopN/loop/backing_file\fR
+Kernel sysfs file containing the backing file path for loop device N.
+
+.SH SEE ALSO
+\fB70-rpi-symlink-loop-devices.rules\fR(7), \fBrpi-setup-loop@.service\fR(8), \fBlosetup\fR(8), \fBsystemd-escape\fR(1), \fBudev\fR(7)
+
+.SH NOTES
+This utility is typically called automatically by udev rules and is not intended for direct interactive use. The output format is specifically designed for use with udev's \fBSYMLINK+=\fR directive.

@@ -1,0 +1,65 @@
+.TH 70-RPI-SYMLINK-LOOP-DEVICES.RULES 7 "rpi-loop-utils" "rpi-loop-utils System Administration"
+
+.SH NAME
+70-rpi-symlink-loop-devices.rules \- udev rule for creating stable loop device symlinks
+
+.SH SYNOPSIS
+/usr/lib/udev/rules.d/70-rpi-symlink-loop-devices.rules
+
+.SH DESCRIPTION
+This udev rule creates stable symbolic links in \fI/dev/disk/by-backingfile/\fR for loop devices, providing persistent device names based on the backing file path rather than the automatically assigned \fI/dev/loop\fRN device numbers.
+
+Similar to the persistent storage rules provided by the udev package (such as \fB60-persistent-storage.rules\fR), this rule ensures that loop devices can be referenced by a consistent path that reflects their underlying backing file, making system administration and scripting more reliable.
+
+.SH OPERATION
+When a loop device changes state, the rule:
+
+.IP 1. 4
+Detects block devices with kernel names matching "loop*"
+.IP 2. 4
+Calls \fBrpi-loop-device-namer\fR(8) to generate the appropriate symlink name
+.IP 3. 4
+Creates a symbolic link in \fI/dev/disk/by-backingfile/\fR pointing to the loop device
+
+The symlink name is the systemd-escaped path of the backing file, ensuring that all characters in file paths are properly encoded for use in device names.
+
+.SH EXAMPLES
+For a loop device backed by \fI/var/swap\fR:
+.nf
+/dev/disk/by-backingfile/var-swap -> /dev/loop0
+.fi
+
+For a loop device backed by \fI/home/pi/disk.img\fR:
+.nf
+/dev/disk/by-backingfile/home-pi-disk.img -> /dev/loop1
+.fi
+
+.SH USE CASES
+This functionality is particularly useful for:
+
+.TP
+\fBSystem scripts\fR
+Scripts can reference loop devices by their backing file path rather than hoping a specific loop number remains constant.
+
+.TP
+\fBSystemd units\fR
+Services can use the stable path in \fBWhat=\fR directives and similar configuration.
+
+.TP
+\fBSwap management\fR
+Swap files mounted on loop devices can be reliably referenced for management operations.
+
+.SH FILES
+.TP
+\fI/usr/lib/udev/rules.d/70-rpi-symlink-loop-devices.rules\fR
+The udev rule file.
+
+.TP
+\fI/dev/disk/by-backingfile/\fR
+Directory containing the created symlinks.
+
+.SH SEE ALSO
+\fBudev\fR(7), \fBrpi-loop-device-namer\fR(8), \fBrpi-setup-loop@.service\fR(8), \fBlosetup\fR(8), \fBsystemd-escape\fR(1)
+
+.SH NOTES
+The rule only creates symlinks for loop devices that have an associated backing file. Empty or unbound loop devices will not have corresponding symlinks created.
