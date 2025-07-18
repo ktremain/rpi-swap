@@ -1,5 +1,33 @@
-rpi-swap (0.0.1) UNRELEASED; urgency=low
+rpi-swap (1.0.0) trixie; urgency=medium
 
+  [ richard.oliver@raspberrypi.com ]
   * Initial release.
 
- --  <richard.oliver@raspberrypi.com>  Tue, 29 Apr 2025 14:01:00 +0100
+  [ Richard Oliver ]
+  * debian/control: Fix typo
+  * Update .gitignore
+  * Default SwapFactor to 1
+  * swap.conf: Improve default file
+  * rpi-swap-generator: Major simplifying refactor
+  * s/(rpi-resize-)var-swap-service(.service)/\1swap-file\2
+  * Move internal binaries onto /usr/lib/ paths
+  * Implement swap file resizing for zram+file mechanism
+  * Update README
+  * README: Known issue on package removal
+  * Initial move to rpi-systemd-config
+  * Further rework to systemd
+  * zram+file default for all platforms
+  * Reword man page and add drop-in example
+  * Implement writeback & additional man pages
+  * Add copyright + fix aliased paths
+  * rpi-loop-utils: Fix aliased paths
+  * rpi-loop-utils: Fix unescape bug
+  * rpi-loop-utils: Add man pages
+  * Lower priority of zram-generator drop-ins + document
+  * README.md: Be more user-friendly
+  * rpi-swap-generator: Discuss swap.target in man page
+  * rpi-swap: postrm message re systemd-zram-generator
+  * rpi-swap: Add 'none' mechanism
+  * debian: Add salsa-ci.yml
+
+ -- Richard Oliver <richard.oliver@raspberrypi.com>  Fri, 18 Jul 2025 15:12:51 +0100
