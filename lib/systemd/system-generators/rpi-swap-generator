@@ -215,7 +215,7 @@ eval "$( \
 
 # Sanitize mechanism - ensure it's one of the allowed values
 case "${CONF_MECHANISM}" in
-  swapfile|zram|zram+file|auto)
+  swapfile|zram|zram+file|auto|none)
     # Valid mechanism, do nothing
     ;;
   *)
@@ -245,8 +245,8 @@ if [ "${CONF_WRITEBACK_INITIATOR}" = "auto" ]; then
   CONF_WRITEBACK_INITIATOR="timer"
 fi
 
-# For 'zram' mechanism, we don't need a swap file at all
-if [ "${CONF_MECHANISM}" = "zram" ]; then
+# For 'zram' and 'none' mechanisms, we don't need a swap file at all
+if [ "${CONF_MECHANISM}" = "zram" ] || [ "${CONF_MECHANISM}" = "none" ]; then
   # Skip calculation and set swap size to 0
   CONF_SWAPSIZE="0"
 else
@@ -271,6 +271,11 @@ elif [ "${CONF_MECHANISM}" = "zram+file" ]; then
   setup_zram_mechanism "zram+file"
   if [ "${CONF_WRITEBACK_INITIATOR}" = "timer" ]; then
     create_writeback_units "${CONF_INITIAL_WRITEBACK_DELAY}" "${CONF_PERIODIC_WRITEBACK_INTERVAL}"
+  fi
+elif [ "${CONF_MECHANISM}" = "none" ]; then
+  # No swap setup at all, but clean up existing swap file if present
+  if [ -f "${CONF_SWAPFILE}" ]; then
+    create_remove_swap_file_service "${CONF_SWAPFILE}"
   fi
 elif [ "${CONF_SWAPSIZE}" -ne 0 ]; then # Assumed 'swapfile' case
   create_swap_unit "${CONF_SWAPFILE}" "rpi-resize-swap-file.service"

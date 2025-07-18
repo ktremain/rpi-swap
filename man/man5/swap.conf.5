@@ -29,7 +29,7 @@ All options are configured in the [RpiSwap], [Swapfile], or [ZramWriteback] sect
 
 .TP
 \fBMechanism=\fR
-Controls which swap mechanism to use. One of "auto", "swapfile", "zram", and "zram+file".
+Controls which swap mechanism to use. One of "auto", "swapfile", "zram", "zram+file", and "none".
 .RS
 .IP \(bu 2
 \fBauto\fR: Automatically selects the most appropriate mechanism. At present, this defaults to "zram+file", but the default may change in future releases. If you require a specific mechanism to always be used, set it explicitly.
@@ -39,6 +39,8 @@ Controls which swap mechanism to use. One of "auto", "swapfile", "zram", and "zr
 \fBzram\fR: A compressed RAM-based swap device is created. No swap file is used.
 .IP \(bu 2
 \fBzram+file\fR: A compressed RAM-based swap device is created, with the swap file specified in \fBSwapfile::Path\fR as a backing store.
+.IP \(bu 2
+\fBnone\fR: No swap is configured. Any existing swap file will be removed to free up disk space.
 .RE
 .IP
 Defaults to "\fBauto\fR".
@@ -119,6 +121,20 @@ EOF
 .fi
 
 This drop-in configuration file will override the default "auto" mechanism and ensure that a traditional swapfile is always used instead of the default compressed RAM-based swap device.
+
+.SS "Example 2. Disabling swap entirely"
+
+To disable all swap functionality, create a drop-in configuration file:
+
+.nf
+sudo mkdir -p /etc/rpi/swap.conf.d/
+sudo tee /etc/rpi/swap.conf.d/90-disable-swap.conf > /dev/null <<EOF
+[RpiSwap]
+Mechanism=none
+EOF
+.fi
+
+This will disable all swap mechanisms and remove any existing swap file to free up disk space. This is useful for systems with abundant RAM where swap is not required.
 
 .SH SEE ALSO
 \fBsystemd.syntax\fR(7), \fBrpi-swap-generator\fR(8)

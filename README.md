@@ -17,7 +17,7 @@ The `rpi-swap` package provides intelligent swap configuration that adapts to yo
 
 ## How it Works
 
-The system offers three main swap mechanisms:
+The system offers four main swap mechanisms:
 
 **🗜️ Compressed RAM Swap (zram)**
 Uses a portion of your RAM to create compressed swap space. Ideal for systems with limited storage or SD cards where you want to minimise write wear.
@@ -27,6 +27,9 @@ Traditional swap file on disk storage. Best for systems with fast storage like U
 
 **🔄 Hybrid (zram + file)**
 Combines both approaches - compressed RAM swap for immediate needs, with a backing file that allows idle pages to be moved out of zram over time. This frees up precious zram space for active use, making it particularly beneficial on memory-constrained systems.
+
+**🚫 No Swap (none)**
+Completely disables swap functionality. Useful for systems with abundant RAM or specialised applications where swap is not desired. Any existing swap files will be automatically removed.
 
 ## What's Included
 
