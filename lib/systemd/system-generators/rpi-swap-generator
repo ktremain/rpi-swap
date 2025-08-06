@@ -188,6 +188,16 @@ After=rpi-resize-swap-file.service"
     "bindings.conf" \
     "${bindings}"
 
+  # Create the ordering for zram+file mechanism
+  if [ "${mechanism}" = "zram+file" ]; then
+    create_systemd_drop_in \
+      "generator" \
+      "systemd-zram-setup@zram0.service" \
+      "ordering.conf" \
+      "[Unit]
+After=rpi-setup-loop@${BACKING_FILE}.service"
+  fi
+
   # For zram+file, we must mark the pages as idle before they're first used
   if [ "${mechanism}" = "zram+file" ]; then
     create_systemd_drop_in \
