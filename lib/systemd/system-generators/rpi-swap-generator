@@ -6,6 +6,7 @@ set -e
 
 : "${CONFIG_FILE:=/etc/rpi/swap.conf}"
 : "${SWAP_FILE_SIZE_CALC_BIN:=/usr/lib/rpi-swap/bin/rpi-desired-swap-size}"
+: "${ZRAM_SIZE_CALC_BIN:=/usr/lib/rpi-swap/bin/rpi-desired-zram-size}"
 
 # Function to create a service that removes the swap file
 create_remove_swap_file_service() {
@@ -134,6 +135,13 @@ setup_zram_mechanism() {
   local zram_config="[zram0]
 host-memory-limit=none
 fs-type=swap"
+
+  # Add zram size if calculated
+  if [ -n "${CONF_ZRAM_SIZE}" ] && [ "${CONF_ZRAM_SIZE}" -gt 0 ] 2>/dev/null; then
+    # systemd-zram-generator expects the value in MiB as a mathematical expression
+    zram_config="${zram_config}
+zram-size=${CONF_ZRAM_SIZE}"
+  fi
   local bindings="[Unit]
 BindsTo=dev-%i.swap"
 
@@ -200,6 +208,9 @@ eval "$( \
     CONF_MAXDISK_PCT   File::MaxDiskPercent \
     CONF_MAXSWAP       File::MaxSizeMiB \
     CONF_SWAPSIZE      File::FixedSizeMiB \
+    CONF_ZRAM_FACTOR   Zram::RamMultiplier \
+    CONF_ZRAM_MAXSIZE  Zram::MaxSizeMiB \
+    CONF_ZRAM_SIZE     Zram::FixedSizeMiB \
     CONF_WRITEBACK_INITIATOR      Zram::WritebackTrigger \
     CONF_INITIAL_WRITEBACK_DELAY  Zram::WritebackInitialDelay \
     CONF_PERIODIC_WRITEBACK_INTERVAL Zram::WritebackPeriodicInterval \
@@ -258,6 +269,17 @@ else
     CONF_MAXSWAP \
     CONF_SWAPSIZE
   CONF_SWAPSIZE="$(${SWAP_FILE_SIZE_CALC_BIN})"
+fi
+
+# Calculate zram size for 'zram' and 'zram+file' mechanisms
+if [ "${CONF_MECHANISM}" = "zram" ] || [ "${CONF_MECHANISM}" = "zram+file" ]; then
+  export \
+    CONF_ZRAM_FACTOR \
+    CONF_ZRAM_MAXSIZE \
+    CONF_ZRAM_SIZE
+  CONF_ZRAM_SIZE="$(${ZRAM_SIZE_CALC_BIN})"
+else
+  CONF_ZRAM_SIZE="0"
 fi
 
 CONF_SWAPFILE="$(realpath "${CONF_SWAPFILE}")"

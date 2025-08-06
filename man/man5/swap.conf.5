@@ -71,6 +71,18 @@ A fixed file size in MiB (mebibytes). If set, this value overrides the \fBRamMul
 .SS "[Zram] Section Options"
 These options configure the zram (compressed RAM) swap device used by both the "zram" and "zram+file" mechanisms.
 
+.TP
+\fBRamMultiplier=\fR
+Target zram decompressed capacity as a multiple of system RAM. For example, a value of "1" means a zram device capacity equal to the total system RAM, while "2" creates zram capacity twice the size of RAM. Note that this represents the decompressed virtual capacity, not actual RAM usage. Due to compression, actual RAM consumption will be significantly lower (typically around 50% with 2x compression safely assumed).
+
+.TP
+\fBMaxSizeMiB=\fR
+The maximum zram decompressed capacity in MiB (mebibytes). This limits the zram size irrespective of the \fBRamMultiplier\fR setting. Set to an empty string to disable this limit. Like \fBRamMultiplier\fR, this represents decompressed virtual capacity.
+
+.TP
+\fBFixedSizeMiB=\fR
+A fixed zram decompressed capacity in MiB (mebibytes). If set, this value overrides the \fBRamMultiplier\fR calculation and is used directly to set the exact zram virtual capacity.
+
 The following options control writeback behaviour for the "zram+file" mechanism. Writeback allows zram to move less frequently accessed pages to the backing file, improving memory efficiency. These writeback options are ignored for other mechanisms.
 
 .TP

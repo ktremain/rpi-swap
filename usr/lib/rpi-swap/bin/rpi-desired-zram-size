@@ -1,0 +1,32 @@
+#!/bin/sh
+
+set -e
+
+: "${CONF_ZRAM_FACTOR:=1}"
+
+# CONF_ZRAM_MAXSIZE is optional and is allowed to be an empty string
+# shellcheck disable=SC2236
+if [ -z "${CONF_ZRAM_MAXSIZE}" ] && [ ! -n "${CONF_ZRAM_MAXSIZE+set}" ]; then
+  CONF_ZRAM_MAXSIZE=2048
+fi
+
+if [ -z "${CONF_ZRAM_SIZE}" ] || ! [ "${CONF_ZRAM_SIZE}" -eq "${CONF_ZRAM_SIZE}" ] 2>/dev/null ; then
+  # Must have ZRAM_FACTOR to even try to proceed
+  if [ -z "${CONF_ZRAM_FACTOR}" ] || ! [ "${CONF_ZRAM_FACTOR}" -eq "${CONF_ZRAM_FACTOR}" ] 2>/dev/null ; then
+    CONF_ZRAM_FACTOR="1"
+  fi
+  RAM_KB="$(grep -oP -m1 '^MemTotal:\s*\K\d+(?=\s+kB$)' /proc/meminfo)"
+  RAM_MB="$((RAM_KB / 1024))"
+  CANDIDATE_SIZE="$((RAM_MB * CONF_ZRAM_FACTOR))"
+
+  # No disk space constraints for zram - it uses RAM, not disk
+
+  if [ -n "${CONF_ZRAM_MAXSIZE}" ] && [ "${CONF_ZRAM_MAXSIZE}" -eq "${CONF_ZRAM_MAXSIZE}" ] 2>/dev/null; then
+    if [ "$CONF_ZRAM_MAXSIZE" -lt "$CANDIDATE_SIZE" ]; then
+      CANDIDATE_SIZE="$CONF_ZRAM_MAXSIZE"
+    fi
+  fi
+  CONF_ZRAM_SIZE="$CANDIDATE_SIZE"
+fi
+
+echo "$CONF_ZRAM_SIZE" 
