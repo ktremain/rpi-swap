@@ -8,7 +8,7 @@ Homepage: https://www.raspberrypi.com/software
 
 Package: rpi-loop-utils
 Architecture: all
-Depends: systemd
+Depends: systemd, inotify-tools
 Description: loop device utilities
  This package provides udev rules to automatically create/destroy
  /dev/disk/by-backingfile/ symlinks for loop devices. The templated systemd

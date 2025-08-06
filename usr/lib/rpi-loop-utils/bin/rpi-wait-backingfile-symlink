@@ -1,0 +1,39 @@
+#!/bin/sh
+
+set -e
+
+# Usage: rpi-wait-loop-backingfile <escaped-filename>
+# Example: rpi-wait-loop-backingfile var-swap
+
+if [ $# -ne 1 ]; then
+  echo "Usage: $0 <escaped-filename>" >&2
+  exit 1
+fi
+
+ESCAPED_FILE="$1"
+TARGET_SYMLINK="/dev/disk/by-backingfile/${ESCAPED_FILE}"
+BY_BACKINGFILE_DIR="/dev/disk/by-backingfile"
+
+# If the symlink already exists, we're done
+if [ -e "${TARGET_SYMLINK}" ]; then
+  exit 0
+fi
+
+# Wait for the by-backingfile directory to exist first
+if [ ! -d "${BY_BACKINGFILE_DIR}" ]; then
+  # Watch /dev/disk for the by-backingfile directory to be created
+  inotifywait -e create /dev/disk/ 2>/dev/null | while read path action file; do
+    if [ "$file" = "by-backingfile" ]; then
+      break
+    fi
+  done
+fi
+
+# Now wait for our specific symlink to appear in by-backingfile
+while [ ! -e "${TARGET_SYMLINK}" ]; do
+  inotifywait -e create "${BY_BACKINGFILE_DIR}/" 2>/dev/null | while read path action file; do
+    if [ "$file" = "${ESCAPED_FILE}" ]; then
+      break
+    fi
+  done
+done
