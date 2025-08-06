@@ -7,11 +7,11 @@ set -e
 : "${CONF_SWAPFILE:=/var/swap}"
 eval "$( \
   rpi-systemd-config rpi/swap.conf \
-    CONF_SWAPFILE      Swapfile::Path \
-    CONF_SWAPFACTOR    Swapfile::SwapFactor \
-    CONF_MAXDISK_PCT   Swapfile::MaxDiskPct \
-    CONF_MAXSWAP       Swapfile::MaxSwap \
-    CONF_SWAPSIZE      Swapfile::SwapSize \
+    CONF_SWAPFILE      File::Path \
+    CONF_SWAPFACTOR    File::RamMultiplier \
+    CONF_MAXDISK_PCT   File::MaxDiskPercent \
+    CONF_MAXSWAP       File::MaxSizeMiB \
+    CONF_SWAPSIZE      File::FixedSizeMiB \
 )"
 export \
   CONF_SWAPFILE \

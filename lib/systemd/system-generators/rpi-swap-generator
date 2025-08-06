@@ -195,11 +195,11 @@ ExecStartPost=/bin/sh -c 'echo all > /sys/block/zram0/idle'"
 eval "$( \
   rpi-systemd-config rpi/swap.conf \
     CONF_MECHANISM     Main::Mechanism \
-    CONF_SWAPFILE      Swapfile::Path \
-    CONF_SWAPFACTOR    Swapfile::SwapFactor \
-    CONF_MAXDISK_PCT   Swapfile::MaxDiskPct \
-    CONF_MAXSWAP       Swapfile::MaxSwap \
-    CONF_SWAPSIZE      Swapfile::SwapSize \
+    CONF_SWAPFILE      File::Path \
+    CONF_SWAPFACTOR    File::RamMultiplier \
+    CONF_MAXDISK_PCT   File::MaxDiskPercent \
+    CONF_MAXSWAP       File::MaxSizeMiB \
+    CONF_SWAPSIZE      File::FixedSizeMiB \
     CONF_WRITEBACK_INITIATOR      ZramWriteback::Trigger \
     CONF_INITIAL_WRITEBACK_DELAY  ZramWriteback::InitialDelay \
     CONF_PERIODIC_WRITEBACK_INTERVAL ZramWriteback::PeriodicInterval \
