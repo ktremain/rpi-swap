@@ -10,14 +10,35 @@ if [ -z "${CONF_ZRAM_MAXSIZE}" ] && [ ! -n "${CONF_ZRAM_MAXSIZE+set}" ]; then
   CONF_ZRAM_MAXSIZE=2048
 fi
 
+# Function to validate floating-point input
+validate_float() {
+  local value="$1"
+  # Allow: digits, optional decimal point, optional digits after decimal
+  # Reject: negative numbers, scientific notation, other characters
+  echo "$value" | grep -qE '^[0-9]+(\.[0-9]+)?$'
+}
+
+# Function to multiply using awk
+# factor must have been validated by validate_float
+awk_multiply() {
+  local ram_mb="$1"
+  local factor="$2"
+
+  # Use awk for floating-point multiplication, round result to integer
+  awk "BEGIN { printf \"%.0f\", $ram_mb * $factor }"
+}
+
 if [ -z "${CONF_ZRAM_SIZE}" ] || ! [ "${CONF_ZRAM_SIZE}" -eq "${CONF_ZRAM_SIZE}" ] 2>/dev/null ; then
-  # Must have ZRAM_FACTOR to even try to proceed
-  if [ -z "${CONF_ZRAM_FACTOR}" ] || ! [ "${CONF_ZRAM_FACTOR}" -eq "${CONF_ZRAM_FACTOR}" ] 2>/dev/null ; then
+  # Validate and set default ZRAM_FACTOR
+  if [ -z "${CONF_ZRAM_FACTOR}" ] || ! validate_float "${CONF_ZRAM_FACTOR}"; then
     CONF_ZRAM_FACTOR="1"
   fi
+
   RAM_KB="$(grep -oP -m1 '^MemTotal:\s*\K\d+(?=\s+kB$)' /proc/meminfo)"
   RAM_MB="$((RAM_KB / 1024))"
-  CANDIDATE_SIZE="$((RAM_MB * CONF_ZRAM_FACTOR))"
+
+  # Use floating-point multiplication
+  CANDIDATE_SIZE="$(awk_multiply "$RAM_MB" "$CONF_ZRAM_FACTOR")"
 
   # No disk space constraints for zram - it uses RAM, not disk
 

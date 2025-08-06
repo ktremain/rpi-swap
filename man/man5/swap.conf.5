@@ -54,7 +54,7 @@ The path to the swap file. This is used directly by the "swapfile" mechanism, an
 
 .TP
 \fBRamMultiplier=\fR
-Target file size as a multiple of system RAM. For example, a value of "1" means a file size equal to the total system RAM, while "2" creates a file twice the size of RAM. The final swap size is constrained by \fBMaxSizeMiB\fR and \fBMaxDiskPercent\fR.
+Target file size as a multiple of system RAM. For example, a value of "1" means a file size equal to the total system RAM, while "0.5" creates half the RAM size. The final swap size is constrained by \fBMaxSizeMiB\fR and \fBMaxDiskPercent\fR.
 
 .TP
 \fBMaxSizeMiB=\fR
@@ -73,7 +73,7 @@ These options configure the zram (compressed RAM) swap device used by both the "
 
 .TP
 \fBRamMultiplier=\fR
-Target zram decompressed capacity as a multiple of system RAM. For example, a value of "1" means a zram device capacity equal to the total system RAM, while "2" creates zram capacity twice the size of RAM. Note that this represents the decompressed virtual capacity, not actual RAM usage. Due to compression, actual RAM consumption will be significantly lower (typically around 50% with 2x compression safely assumed).
+Target zram decompressed capacity as a multiple of system RAM. For example, a value of "1" means a zram device capacity equal to the total system RAM, while "0.5" creates half the RAM size. Note that this represents the decompressed virtual capacity, not actual RAM usage. Due to compression, actual RAM consumption will be significantly lower (typically around 50% with 2x compression safely assumed).
 
 .TP
 \fBMaxSizeMiB=\fR
