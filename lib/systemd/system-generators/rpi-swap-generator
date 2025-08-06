@@ -194,7 +194,7 @@ ExecStartPost=/bin/sh -c 'echo all > /sys/block/zram0/idle'"
 : "${CONF_SWAPFILE:=/var/swap}"
 eval "$( \
   rpi-systemd-config rpi/swap.conf \
-    CONF_MECHANISM     RpiSwap::Mechanism \
+    CONF_MECHANISM     Main::Mechanism \
     CONF_SWAPFILE      Swapfile::Path \
     CONF_SWAPFACTOR    Swapfile::SwapFactor \
     CONF_MAXDISK_PCT   Swapfile::MaxDiskPct \

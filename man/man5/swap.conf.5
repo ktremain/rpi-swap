@@ -23,9 +23,9 @@ To disable a configuration file supplied by the vendor, the recommended way is t
 For a complete description of the configuration loading rules, see the 'CONFIGURATION DIRECTORIES AND PRECEDENCE' section of system.conf.d(5).
 
 .SH OPTIONS
-All options are configured in the [RpiSwap], [Swapfile], or [ZramWriteback] sections.
+All options are configured in the [Main], [Swapfile], or [ZramWriteback] sections.
 
-.SS "[RpiSwap] Section Options"
+.SS "[Main] Section Options"
 
 .TP
 \fBMechanism=\fR
@@ -115,7 +115,7 @@ To override the default swap mechanism and force the use of a traditional swapfi
 .nf
 sudo mkdir -p /etc/rpi/swap.conf.d/
 sudo tee /etc/rpi/swap.conf.d/80-use-swapfile.conf > /dev/null <<EOF
-[RpiSwap]
+[Main]
 Mechanism=swapfile
 EOF
 .fi
@@ -129,7 +129,7 @@ To disable all swap functionality, create a drop-in configuration file:
 .nf
 sudo mkdir -p /etc/rpi/swap.conf.d/
 sudo tee /etc/rpi/swap.conf.d/90-disable-swap.conf > /dev/null <<EOF
-[RpiSwap]
+[Main]
 Mechanism=none
 EOF
 .fi
