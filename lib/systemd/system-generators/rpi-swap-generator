@@ -200,9 +200,9 @@ eval "$( \
     CONF_MAXDISK_PCT   File::MaxDiskPercent \
     CONF_MAXSWAP       File::MaxSizeMiB \
     CONF_SWAPSIZE      File::FixedSizeMiB \
-    CONF_WRITEBACK_INITIATOR      ZramWriteback::Trigger \
-    CONF_INITIAL_WRITEBACK_DELAY  ZramWriteback::InitialDelay \
-    CONF_PERIODIC_WRITEBACK_INTERVAL ZramWriteback::PeriodicInterval \
+    CONF_WRITEBACK_INITIATOR      Zram::WritebackTrigger \
+    CONF_INITIAL_WRITEBACK_DELAY  Zram::WritebackInitialDelay \
+    CONF_PERIODIC_WRITEBACK_INTERVAL Zram::WritebackPeriodicInterval \
 )"
 
 # Set default mechanism to "auto" if not specified in config
