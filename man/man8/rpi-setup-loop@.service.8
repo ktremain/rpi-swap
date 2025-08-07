@@ -67,7 +67,7 @@ sudo systemctl enable "rpi-setup-loop@$(systemd-escape --path /home/pi/backup-di
 sudo systemctl start "rpi-setup-loop@home-pi-backup\\x2ddisk.img.service"
 
 # The loop device is now available as:
-# /dev/disk/by-backingfile/home-pi-backup\x2ddisk.img -> /dev/loop<N>
+# /dev/disk/by-backingfile/home-pi-backup\\x2ddisk.img -> /dev/loop<N>
 .fi
 
 .SH FILES
