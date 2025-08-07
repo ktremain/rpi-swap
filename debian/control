@@ -3,7 +3,7 @@ Section: embedded
 Priority: optional
 Maintainer: Richard Oliver <richard.oliver@raspberrypi.com>
 Build-Depends: debhelper (>=13), debhelper-compat (= 13)
-Standards-Version: 3.9.5
+Standards-Version: 4.7.2
 Homepage: https://www.raspberrypi.com/software
 
 Package: rpi-loop-utils
