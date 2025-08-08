@@ -179,6 +179,14 @@ After=rpi-resize-swap-file.service"
 DefaultDependencies=no
 Requires=systemd-remount-fs.service
 After=systemd-remount-fs.service"
+
+    # Create a drop-in to speed up symlink creation for swap use case
+    create_systemd_drop_in \
+      "generator" \
+      "rpi-setup-loop@${BACKING_FILE}.service" \
+      "fast-symlink.conf" \
+      "[Service]
+ExecStart=/bin/sh -c 'mkdir -p /dev/disk/by-backingfile && LOOP_DEV=\$(losetup --associated \"/%I\" | cut -d: -f1) && ln -s \"\$LOOP_DEV\" /dev/disk/by-backingfile/%i || true'"
   fi
 
   # Create zram configuration
