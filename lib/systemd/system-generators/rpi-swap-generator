@@ -169,6 +169,16 @@ writeback-device=${LOOP_DEVICE}"
       "[Unit]
 Requires=rpi-resize-swap-file.service
 After=rpi-resize-swap-file.service"
+
+    # Create a drop-in to avoid dependency cycles with swap.target
+    create_systemd_drop_in \
+      "generator" \
+      "rpi-setup-loop@${BACKING_FILE}.service" \
+      "no-dependency-cycle.conf" \
+      "[Unit]
+DefaultDependencies=no
+Requires=systemd-remount-fs.service
+After=systemd-remount-fs.service"
   fi
 
   # Create zram configuration
