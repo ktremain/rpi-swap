@@ -63,6 +63,18 @@ For most users, rpi-swap works automatically with no configuration required.
 
 Advanced configuration is available through configuration drop-ins as documented in `swap.conf(5)` and will typically be managed through `raspi-config` in future Raspberry Pi OS releases.
 
+### Making Configuration Changes
+
+**⚠️ Important: After making any changes to swap configuration, you must reboot your system for the changes to take effect.**
+
+While `systemctl daemon-reload` will regenerate the systemd units, it won't stop existing swap units or start new ones. The swap generator runs during early boot when memory pressure is minimal - attempting to reconfigure active swap later can cause system instability.
+
+Configuration files are located at:
+- `/etc/rpi/swap.conf` - Main configuration file
+- `/etc/rpi/swap.conf.d/*.conf` - Drop-in configuration files (recommended for local changes)
+
+For examples and detailed configuration options, see `man swap.conf`.
+
 ## System Requirements
 
 - Raspberry Pi running a systemd-based Linux distribution

@@ -107,6 +107,15 @@ The time to wait after system boot before performing the first writeback operati
 \fBWritebackPeriodicInterval=\fR
 The interval between subsequent writeback operations when using the "timer" trigger. This determines how frequently zram will write back less active pages to the backing swap file. Takes a time span value. See \fBsystemd.time\fR(7) for details on the syntax. This setting is ignored for other triggers. Defaults to "\fB24h\fR".
 
+.SH CONFIGURATION CHANGES
+.B WARNING: After modifying any swap configuration, you must reboot the system for changes to take effect.
+
+While running \fBsystemctl daemon-reload\fR after configuration changes will generate new swap units, existing swap units are not typically stopped by systemd, and new units will not be started automatically as they are pulled in by swap.target which has already been reached during boot.
+
+The rpi-swap generator creates and sizes swap devices during early boot when memory pressure is minimal. Attempting to reconfigure swap after boot (such as resizing files whilst they are active) could lead to system instability, particularly on memory-constrained systems.
+
+.B Always reboot after changing swap configuration to ensure the new settings are applied correctly and safely.
+
 .SH MONITORING WRITEBACK TIMERS
 When using the "timer" writeback initiator, you can monitor the timer status and next scheduled execution using systemctl:
 
@@ -136,6 +145,8 @@ EOF
 
 This drop-in configuration file will override the default "auto" mechanism and ensure that a traditional swapfile is always used instead of the default compressed RAM-based swap device.
 
+.B After creating this configuration file, reboot the system for the changes to take effect.
+
 .SS "Example 2. Disabling swap entirely"
 
 To disable all swap functionality, create a drop-in configuration file:
@@ -149,6 +160,8 @@ EOF
 .fi
 
 This will disable all swap mechanisms and remove any existing swap file to free up disk space. This is useful for systems with abundant RAM where swap is not required.
+
+.B After creating this configuration file, reboot the system for the changes to take effect.
 
 .SH SEE ALSO
 \fBsystemd.syntax\fR(7), \fBrpi-swap-generator\fR(8)

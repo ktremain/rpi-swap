@@ -31,6 +31,11 @@ For hybrid configurations, implements intelligent writeback of less active pages
 .SH CONFIGURATION
 Configuration is handled through \fBswap.conf\fR(5). The generator reads this configuration and creates the appropriate systemd units automatically.
 
+.SS Configuration Changes
+.B WARNING: After modifying swap configuration, you must reboot the system for changes to take effect.
+
+While \fBsystemctl daemon-reload\fR will regenerate systemd units based on the new configuration, it does not stop existing swap units or start new ones.
+
 .SH MONITORING
 To monitor the swap units created by the generator and verify they are functioning correctly, use:
 
@@ -67,3 +72,12 @@ The generator script itself.
 
 .SH NOTES
 This generator is invoked automatically by systemd during boot. Manual invocation is generally not necessary unless testing configuration changes.
+
+For testing configuration changes without rebooting, the generator can be run manually:
+
+.PP
+.RS
+\fBsudo /lib/systemd/system-generators/rpi-swap-generator /tmp/gen /tmp/gen-early /tmp/gen-late\fR
+.RE
+
+This will create the systemd units in temporary directories where they can be inspected before committing to the changes with a reboot. However, note that this is only suitable for testing - the units must be generated during early boot to function correctly.
