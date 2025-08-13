@@ -198,7 +198,7 @@ BindsTo=dev-%i.swap"
         --path \
         "${CONF_SWAPFILE}" \
     )"
-    LOOP_DEVICE="/dev/disk/by-backingfile/${BACKING_FILE}"
+    local LOOP_DEVICE="/dev/disk/by-backingfile/${BACKING_FILE}"
 
     # Add writeback device to zram config
     zram_config="${zram_config}
