@@ -4,3 +4,4 @@ lib/systemd/system-generators/rpi-swap-generator usr/lib/systemd/system-generato
 lib/systemd/zram-generator.conf.d/20-rpi-swap-zram0-ctrl.conf usr/lib/systemd/zram-generator.conf.d
 lib/systemd/system/rpi-resize-swap-file.service usr/lib/systemd/system
 lib/systemd/system/rpi-zram-writeback.service usr/lib/systemd/system
+lib/systemd/system/rpi-remove-swap-file@.service usr/lib/systemd/system
