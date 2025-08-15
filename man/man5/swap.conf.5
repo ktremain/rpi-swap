@@ -71,6 +71,8 @@ A fixed file size in MiB (mebibytes). If set, this value overrides the \fBRamMul
 .SS "[Zram] Section Options"
 These options configure the zram (compressed RAM) swap device used by both the "zram" and "zram+file" mechanisms.
 
+When zram mechanisms are enabled, the system automatically optimises kernel parameters for compressed swap performance. This includes setting vm.page-cluster=0 to disable readahead, which reduces latency with minimal throughput impact on compressed RAM swap devices.
+
 .TP
 \fBRamMultiplier=\fR
 Target zram decompressed capacity as a multiple of system RAM. For example, a value of "1" means a zram device capacity equal to the total system RAM, while "0.5" creates half the RAM size. Note that this represents the decompressed virtual capacity, not actual RAM usage. Due to compression, actual RAM consumption will be significantly lower (typically around 50% with 2x compression safely assumed). \fBWarning:\fR Values above 2.0 are not recommended, as poor compression could cause the zram device to consume all available RAM.

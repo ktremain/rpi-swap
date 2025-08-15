@@ -20,13 +20,13 @@ The `rpi-swap` package provides intelligent swap configuration that adapts to yo
 The system offers four main swap mechanisms:
 
 **🗜️ Compressed RAM Swap (zram)**
-Uses a portion of your RAM to create compressed swap space. Ideal for systems with limited storage or SD cards where you want to minimise write wear.
+Uses a portion of your RAM to create compressed swap space. Ideal for systems with limited storage or SD cards where you want to minimise write wear. The system automatically optimises kernel settings to reduce latency on compressed swap devices.
 
 **💾 File-based Swap**
 Traditional swap file on disk storage. Best for systems with fast storage like USB drives or SSDs where you want maximum swap capacity.
 
 **🔄 Hybrid (zram + file)**
-Combines both approaches - compressed RAM swap for immediate needs, with writeback storage that allows zram to occasionally move idle pages to disk. This frees up precious zram space for active use while reducing SD card wear through infrequent writes, making it particularly beneficial on memory-constrained systems booting from SD cards.
+Combines both approaches - compressed RAM swap for immediate needs, with writeback storage that allows zram to occasionally move idle pages to disk. This frees up precious zram space for active use while reducing SD card wear through infrequent writes, making it particularly beneficial on memory-constrained systems booting from SD cards. Kernel settings are automatically optimised for low-latency operation with compressed swap devices.
 
 **🚫 No Swap (none)**
 Completely disables swap functionality. Useful for systems with abundant RAM or specialised applications where swap is not desired. Any existing swap files will be automatically removed.
@@ -53,6 +53,7 @@ While `dphys-swapfile` has served Raspberry Pi well, modern systems benefit from
 - **Better memory utilisation**: zram compression uses spare CPU cycles to make better use of your available RAM
 - **Reduced storage wear**: Especially important for SD card longevity
 - **Faster swap performance**: Compressed RAM swap is much faster than disk-based swap
+- **Automatic performance tuning**: Kernel parameters are optimised for low-latency operation with zram devices
 - **Modern systemd integration**: Full integration with systemd's swap.target and service dependencies
 - **Multiple swap mechanisms**: Choose the best approach for your specific hardware and use case
 - **Hybrid capabilities**: Advanced writeback features to optimise memory usage over time

@@ -28,6 +28,10 @@ Supports traditional swap files, zram compression, and hybrid zram+file approach
 \fBAutomatic writeback\fR
 For hybrid configurations, implements intelligent writeback of less active pages from compressed memory to storage.
 
+.TP
+\fBPerformance optimisation\fR
+Automatically configures kernel parameters to optimise zram performance, including disabling readahead (vm.page-cluster=0) to reduce latency on compressed swap devices.
+
 .SH CONFIGURATION
 Configuration is handled through \fBswap.conf\fR(5). The generator reads this configuration and creates the appropriate systemd units automatically.
 
@@ -66,6 +70,10 @@ Main configuration file.
 .TP
 \fI/lib/systemd/system-generators/rpi-swap-generator\fR
 The generator script itself.
+
+.TP
+\fI/run/sysctl.d/70-rpi-swap.conf\fR
+Kernel parameter configuration file automatically created for zram performance optimizations.
 
 .SH SEE ALSO
 \fBswap.conf\fR(5), \fBsystemd.generator\fR(7), \fBsystemd.swap\fR(5)
