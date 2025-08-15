@@ -26,7 +26,7 @@ Uses a portion of your RAM to create compressed swap space. Ideal for systems wi
 Traditional swap file on disk storage. Best for systems with fast storage like USB drives or SSDs where you want maximum swap capacity.
 
 **🔄 Hybrid (zram + file)**
-Combines both approaches - compressed RAM swap for immediate needs, with a backing file that allows idle pages to be moved out of zram over time. This frees up precious zram space for active use, making it particularly beneficial on memory-constrained systems.
+Combines both approaches - compressed RAM swap for immediate needs, with writeback storage that allows zram to occasionally move idle pages to disk. This frees up precious zram space for active use while reducing SD card wear through infrequent writes, making it particularly beneficial on memory-constrained systems booting from SD cards.
 
 **🚫 No Swap (none)**
 Completely disables swap functionality. Useful for systems with abundant RAM or specialised applications where swap is not desired. Any existing swap files will be automatically removed.
@@ -37,7 +37,7 @@ Completely disables swap functionality. Useful for systems with abundant RAM or 
 The core swap management system that:
 - Automatically detects your system's memory and storage configuration
 - Creates and manages swap devices during early boot
-- Provides writeback capabilities to move data from compressed RAM to storage when beneficial
+- Provides writeback capabilities to occasionally move idle pages from compressed RAM to file-backed storage
 - Replaces the functionality of `dphys-swapfile` with a more modern approach
 
 ### rpi-loop-utils (supporting package)

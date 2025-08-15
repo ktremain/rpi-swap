@@ -38,7 +38,7 @@ Controls which swap mechanism to use. One of "auto", "swapfile", "zram", "zram+f
 .IP \(bu 2
 \fBzram\fR: A compressed RAM-based swap device is created. No swap file is used.
 .IP \(bu 2
-\fBzram+file\fR: A compressed RAM-based swap device is created, with the file specified in \fBFile::Path\fR as a backing store.
+\fBzram+file\fR: A compressed RAM-based swap device is created, with the file specified in \fBFile::Path\fR used for writeback storage. The file is not used as a traditional swap device; instead, zram occasionally writes idle pages to it to free up RAM, reducing SD card wear through infrequent writes.
 .IP \(bu 2
 \fBnone\fR: No swap is configured. Any existing swap file will be removed to free up disk space.
 .RE
@@ -46,11 +46,11 @@ Controls which swap mechanism to use. One of "auto", "swapfile", "zram", "zram+f
 Defaults to "\fBauto\fR".
 
 .SS "[File] Section Options"
-These options configure the file used by both the "swapfile" and "zram+file" mechanisms. For "swapfile", the file serves as the primary swap device. For "zram+file", it serves as a backing store for the compressed RAM-based swap device via a loop device. These options are disregarded for mechanisms that don't involve a file (e.g. "zram"), and any existing file will be removed to free up disk space.
+These options configure the file used by both the "swapfile" and "zram+file" mechanisms. For "swapfile", the file serves as the primary swap device. For "zram+file", it serves as writeback storage where zram occasionally writes idle pages to free up RAM, accessed via a loop device. These options are disregarded for mechanisms that don't involve a file (e.g. "zram"), and any existing file will be removed to free up disk space.
 
 .TP
 \fBPath=\fR
-The path to the swap file. This is used directly by the "swapfile" mechanism, and as a backing store via a loop device for the "zram+file" mechanism. Defaults to "\fB/var/swap\fR".
+The path to the swap file. This is used directly by the "swapfile" mechanism, and as writeback storage via a loop device for the "zram+file" mechanism. Defaults to "\fB/var/swap\fR".
 
 .TP
 \fBRamMultiplier=\fR
@@ -73,7 +73,7 @@ These options configure the zram (compressed RAM) swap device used by both the "
 
 .TP
 \fBRamMultiplier=\fR
-Target zram decompressed capacity as a multiple of system RAM. For example, a value of "1" means a zram device capacity equal to the total system RAM, while "0.5" creates half the RAM size. Note that this represents the decompressed virtual capacity, not actual RAM usage. Due to compression, actual RAM consumption will be significantly lower (typically around 50% with 2x compression safely assumed).
+Target zram decompressed capacity as a multiple of system RAM. For example, a value of "1" means a zram device capacity equal to the total system RAM, while "0.5" creates half the RAM size. Note that this represents the decompressed virtual capacity, not actual RAM usage. Due to compression, actual RAM consumption will be significantly lower (typically around 50% with 2x compression safely assumed). \fBWarning:\fR Values above 2.0 are not recommended, as poor compression could cause the zram device to consume all available RAM.
 
 .TP
 \fBMaxSizeMiB=\fR
@@ -83,7 +83,7 @@ The maximum zram decompressed capacity in MiB (mebibytes). This limits the zram 
 \fBFixedSizeMiB=\fR
 A fixed zram decompressed capacity in MiB (mebibytes). If set, this value overrides the \fBRamMultiplier\fR calculation and is used directly to set the exact zram virtual capacity.
 
-The following options control writeback behaviour for the "zram+file" mechanism. Writeback allows zram to move less frequently accessed pages to the backing file, improving memory efficiency. These writeback options are ignored for other mechanisms.
+The following options control writeback behaviour for the "zram+file" mechanism. Writeback allows zram to move idle pages to the writeback file, freeing up RAM while reducing SD card wear through infrequent writes. These writeback options are ignored for other mechanisms.
 
 .TP
 \fBWritebackTrigger=\fR
