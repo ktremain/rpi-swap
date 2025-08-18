@@ -1,3 +1,19 @@
+rpi-swap (1.2.0) trixie; urgency=medium
+
+  * rpi-setup-loop: Use DefaultDependencies
+  * rpi-swap: Avoid swap.target dependency cycle
+  * rpi-swap: Race udev to create backingfile symlinks
+  * rpi-swap-generator: Use argument paths
+  * rpi-swap-generator: Robust symlink creation
+  * rpi-swap: Clarify daemon-reload behaviour
+  * Use static rpi-zram-writeback.service
+  * Use static rpi-remove-swap-file@.service
+  * rpi-swap: Minor fixups
+  * rpi-swap: docs: Clarify zram settings
+  * rpi-swap: Disable readahead for zram configs
+
+ -- Richard Oliver <richard.oliver@raspberrypi.com>  Mon, 18 Aug 2025 16:46:20 +0100
+
 rpi-swap (1.1.1) trixie; urgency=medium
 
   * rpi-swap: Depends on rpi-systemd-config
