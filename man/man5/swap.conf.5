@@ -133,15 +133,18 @@ systemctl status rpi-zram-writeback.service
 .fi
 
 .SH EXAMPLES
-.SS "Example 1. Ensuring a traditional swapfile is used"
+.SS "Example 1. Ensuring a traditional fixed-size swapfile is used"
 
-To override the default swap mechanism and force the use of a traditional swapfile, create the drop-in directory and configuration file:
+To override the default swap mechanism and force the use of a traditional fixed-size (2 GB) swapfile, create the drop-in directory and configuration file:
 
 .nf
 sudo mkdir -p /etc/rpi/swap.conf.d/
 sudo tee /etc/rpi/swap.conf.d/80-use-swapfile.conf > /dev/null <<EOF
 [Main]
 Mechanism=swapfile
+
+[File]
+FixedSizeMiB=2048
 EOF
 .fi
 
