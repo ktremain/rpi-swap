@@ -1,3 +1,10 @@
+rpi-swap (1.2.1) trixie; urgency=medium
+
+  * man: Make swapfile example fixed size
+  * debian: Add gbp configuration
+
+ -- Richard Oliver <richard.oliver@raspberrypi.com>  Fri, 10 Oct 2025 17:43:57 +0100
+
 rpi-swap (1.2.0) trixie; urgency=medium
 
   * rpi-setup-loop: Use DefaultDependencies
