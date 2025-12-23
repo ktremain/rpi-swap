@@ -29,16 +29,20 @@ All options are configured in the [Main], [File], or [Zram] sections.
 
 .TP
 \fBMechanism=\fR
-Controls which swap mechanism to use. One of "auto", "swapfile", "zram", "zram+file", and "none".
+Controls which swap mechanism to use. One of "auto", "swapfile", "swapdev", "zram", "zram+file", "zram+device", and "none".
 .RS
 .IP \(bu 2
-\fBauto\fR: Automatically selects the most appropriate mechanism. At present, this defaults to "zram+file", but the default may change in future releases. If you require a specific mechanism to always be used, set it explicitly.
+\fBauto\fR: Automatically selects the most appropriate mechanism. If a swap partition is detected (or \fBFile::Path\fR already points to a block device), auto prefers "zram+device" and uses that device for writeback. Otherwise it falls back to "zram+file". The creation of a swap partition is not automated; users must provision it themselves if they want auto to choose the device-backed path.
 .IP \(bu 2
 \fBswapfile\fR: A traditional swap file is created on the root filesystem.
+.IP \(bu 2
+\fBswapdev\fR: An existing block device (partition or disk) specified by \fBFile::Path\fR is activated directly as swap. No file resizing or creation occurs. Provisioning the swap partition is a manual step and is not performed by rpi-swap.
 .IP \(bu 2
 \fBzram\fR: A compressed RAM-based swap device is created. No swap file is used.
 .IP \(bu 2
 \fBzram+file\fR: A compressed RAM-based swap device is created, with the file specified in \fBFile::Path\fR used for writeback storage. The file is not used as a traditional swap device; instead, zram occasionally writes idle pages to it to free up RAM, reducing SD card wear through infrequent writes.
+.IP \(bu 2
+\fBzram+device\fR: A compressed RAM-based swap device is created, with the block device specified in \fBFile::Path\fR used directly for writeback storage. No loop device or file is created; the device must already exist. Provisioning the swap partition is a manual step and is not performed by rpi-swap.
 .IP \(bu 2
 \fBnone\fR: No swap is configured. Any existing swap file will be removed to free up disk space.
 .RE
@@ -46,11 +50,11 @@ Controls which swap mechanism to use. One of "auto", "swapfile", "zram", "zram+f
 Defaults to "\fBauto\fR".
 
 .SS "[File] Section Options"
-These options configure the file used by both the "swapfile" and "zram+file" mechanisms. For "swapfile", the file serves as the primary swap device. For "zram+file", it serves as writeback storage where zram occasionally writes idle pages to free up RAM, accessed via a loop device. These options are disregarded for mechanisms that don't involve a file (e.g. "zram"), and any existing file will be removed to free up disk space.
+These options configure the file or device used by swap-capable mechanisms. For "swapfile", the path serves as the primary swap file. For "swapdev", the path must be an existing block device that is activated directly as swap. For "zram+file", the path serves as writeback storage via a loop device. For "zram+device", the path must be an existing block device used directly for writeback. These options are disregarded for mechanisms that don't involve an external backing store (e.g. "zram"), and any existing file will be removed to free up disk space.
 
 .TP
 \fBPath=\fR
-The path to the swap file. This is used directly by the "swapfile" mechanism, and as writeback storage via a loop device for the "zram+file" mechanism. Defaults to "\fB/var/swap\fR".
+The path to the swap backing resource. For "swapfile", this is the swap file. For "swapdev", this must be the block device to activate as swap. For "zram+file", this is the writeback file (loop-mounted). For "zram+device", this must be the block device used for writeback. Defaults to "\fB/var/swap\fR".
 
 .TP
 \fBRamMultiplier=\fR
@@ -85,7 +89,7 @@ The maximum zram decompressed capacity in MiB (mebibytes). This limits the zram 
 \fBFixedSizeMiB=\fR
 A fixed zram decompressed capacity in MiB (mebibytes). If set, this value overrides the \fBRamMultiplier\fR calculation and is used directly to set the exact zram virtual capacity.
 
-The following options control writeback behaviour for the "zram+file" mechanism. Writeback allows zram to move idle pages to the writeback file, freeing up RAM while reducing SD card wear through infrequent writes. These writeback options are ignored for other mechanisms.
+The following options control writeback behaviour for the "zram+file" and "zram+device" mechanisms. Writeback allows zram to move idle pages to the writeback file or device, freeing up RAM while reducing flash wear through infrequent writes. These writeback options are ignored for other mechanisms.
 
 .TP
 \fBWritebackTrigger=\fR
@@ -165,6 +169,44 @@ EOF
 .fi
 
 This will disable all swap mechanisms and remove any existing swap file to free up disk space. This is useful for systems with abundant RAM where swap is not required.
+
+.B After creating this configuration file, reboot the system for the changes to take effect.
+
+.SS "Example 3. Using a swap partition"
+
+To use an existing swap partition (for example, /dev/mmcblk0p3) instead of a file, create a drop-in configuration file:
+
+.nf
+sudo mkdir -p /etc/rpi/swap.conf.d/
+sudo tee /etc/rpi/swap.conf.d/70-use-swapdev.conf > /dev/null <<EOF
+[Main]
+Mechanism=swapdev
+
+[File]
+Path=/dev/mmcblk0p3
+EOF
+.fi
+
+This will activate the specified block device directly as swap. No file will be created or resized. Ensure the device exists at boot and contains no filesystem data you wish to keep.
+
+.B After creating this configuration file, reboot the system for the changes to take effect.
+
+.SS "Example 4. Using zram with a backing device"
+
+To use zram with direct writeback to an existing block device (for example, /dev/mmcblk0p3) instead of a file-backed loop device, create a drop-in configuration file:
+
+.nf
+sudo mkdir -p /etc/rpi/swap.conf.d/
+sudo tee /etc/rpi/swap.conf.d/75-use-zram-device.conf > /dev/null <<EOF
+[Main]
+Mechanism=zram+device
+
+[File]
+Path=/dev/mmcblk0p3
+EOF
+.fi
+
+This configures a compressed zram swap device with writeback going directly to the specified block device. No file is created or resized. Ensure the device exists at boot and is safe to overwrite with swap data.
 
 .B After creating this configuration file, reboot the system for the changes to take effect.
 

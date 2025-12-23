@@ -193,9 +193,9 @@ vm.page-cluster=0
 EOF
 }
 
-# Function to set up zram mechanisms (both zram and zram+file)
+# Function to set up zram mechanisms (zram, zram+file, zram+device)
 setup_zram_mechanism() {
-  local mechanism="$1"  # Either "zram" or "zram+file"
+  local mechanism="$1"  # "zram", "zram+file", or "zram+device"
 
   # Create sysctl optimizations for zram
   create_zram_sysctl_config
@@ -213,49 +213,61 @@ zram-size=${CONF_ZRAM_SIZE}"
   local bindings="[Unit]
 BindsTo=dev-%i.swap"
 
-  # For zram+file, set up backing file and add to config
-  if [ "${mechanism}" = "zram+file" ]; then
-    BACKING_FILE="$( \
-      systemd-escape \
-        --path \
-        "${CONF_SWAPFILE}" \
-    )"
-    local LOOP_DEVICE="/dev/disk/by-backingfile/${BACKING_FILE}"
+  case "${mechanism}" in
+    "zram+file")
+      BACKING_FILE="$( \
+        systemd-escape \
+          --path \
+          "${CONF_SWAPFILE}" \
+      )"
+      local LOOP_DEVICE="/dev/disk/by-backingfile/${BACKING_FILE}"
 
-    # Add writeback device to zram config
-    zram_config="${zram_config}
+      # Add writeback device to zram config
+      zram_config="${zram_config}
 writeback-device=${LOOP_DEVICE}"
 
-    # Add loop device to bindings
-    bindings="${bindings} rpi-setup-loop@${BACKING_FILE}.service"
+      # Add loop device to bindings
+      bindings="${bindings} rpi-setup-loop@${BACKING_FILE}.service"
 
-    # Create a drop-in for the loop service to ensure the swap file is resized
-    create_systemd_drop_in \
-      "generator" \
-      "rpi-setup-loop@${BACKING_FILE}.service" \
-      "resize-swap.conf" \
-      "[Unit]
+      # Create a drop-in for the loop service to ensure the swap file is resized
+      create_systemd_drop_in \
+        "generator" \
+        "rpi-setup-loop@${BACKING_FILE}.service" \
+        "resize-swap.conf" \
+        "[Unit]
 Requires=rpi-resize-swap-file.service
 After=rpi-resize-swap-file.service"
 
-    # Create a drop-in to avoid dependency cycles with swap.target
-    create_systemd_drop_in \
-      "generator" \
-      "rpi-setup-loop@${BACKING_FILE}.service" \
-      "no-dependency-cycle.conf" \
-      "[Unit]
+      # Create a drop-in to avoid dependency cycles with swap.target
+      create_systemd_drop_in \
+        "generator" \
+        "rpi-setup-loop@${BACKING_FILE}.service" \
+        "no-dependency-cycle.conf" \
+        "[Unit]
 DefaultDependencies=no
 Requires=systemd-remount-fs.service
 After=systemd-remount-fs.service"
 
-    # Create a drop-in to speed up symlink creation for swap use case
-    create_systemd_drop_in \
-      "generator" \
-      "rpi-setup-loop@${BACKING_FILE}.service" \
-      "fast-symlink.conf" \
-      "[Service]
-ExecStart=/bin/sh -c 'mkdir -p /dev/disk/by-backingfile && LOOP_DEV=\$(losetup --associated \"/%I\" | cut -d: -f1) && ln -s \"\$LOOP_DEV\" /dev/disk/by-backingfile/%i || true'"
-  fi
+      # Create a drop-in to speed up symlink creation for swap use case
+      create_systemd_drop_in \
+        "generator" \
+        "rpi-setup-loop@${BACKING_FILE}.service" \
+        "fast-symlink.conf" \
+        "[Service]
+ExecStart=/bin/sh -c 'mkdir -p /dev/disk/by-backingfile && LOOP_DEV=\$(losetup --associated \"/%I\" | cut -d: -f1) && ln -s \"$LOOP_DEV\" /dev/disk/by-backingfile/%i || true'"
+      ;;
+    "zram+device")
+      local DEVICE_UNIT
+      DEVICE_UNIT="$(systemd-escape --path --suffix=device "${CONF_SWAPFILE}")"
+
+      # Use the device directly for writeback
+      zram_config="${zram_config}
+writeback-device=${CONF_SWAPFILE}"
+
+      # Bind to the underlying block device to ensure ordering
+      bindings="${bindings} ${DEVICE_UNIT}"
+      ;;
+  esac
 
   # Create zram configuration
   create_systemd_drop_in \
@@ -264,7 +276,7 @@ ExecStart=/bin/sh -c 'mkdir -p /dev/disk/by-backingfile && LOOP_DEV=\$(losetup -
     "20-rpi-swap-zram0-ctrl.conf" \
     "${zram_config}"
 
-  # Create a swap unit with backing file conflict for zram+file
+  # Create a swap unit with backing file conflict for zram+file only
   local backing_file=""
   if [ "${mechanism}" = "zram+file" ]; then
     backing_file="${CONF_SWAPFILE}"
@@ -278,7 +290,7 @@ ExecStart=/bin/sh -c 'mkdir -p /dev/disk/by-backingfile && LOOP_DEV=\$(losetup -
     "bindings.conf" \
     "${bindings}"
 
-  # Create the ordering for zram+file mechanism
+  # Create ordering for backing resource setup
   if [ "${mechanism}" = "zram+file" ]; then
     create_systemd_drop_in \
       "generator" \
@@ -286,10 +298,18 @@ ExecStart=/bin/sh -c 'mkdir -p /dev/disk/by-backingfile && LOOP_DEV=\$(losetup -
       "ordering.conf" \
       "[Unit]
 After=rpi-setup-loop@${BACKING_FILE}.service"
+  elif [ "${mechanism}" = "zram+device" ]; then
+    create_systemd_drop_in \
+      "generator" \
+      "systemd-zram-setup@zram0.service" \
+      "ordering-device.conf" \
+      "[Unit]
+After=${DEVICE_UNIT}
+Requires=${DEVICE_UNIT}"
   fi
 
-  # For zram+file, we must mark the pages as idle before they're first used
-  if [ "${mechanism}" = "zram+file" ]; then
+  # Mark initial pages idle for writeback-backed zram
+  if [ "${mechanism}" = "zram+file" ] || [ "${mechanism}" = "zram+device" ]; then
     create_systemd_drop_in \
       "generator" \
       "systemd-zram-setup@zram0.service" \
@@ -326,7 +346,7 @@ eval "$( \
 
 # Sanitize mechanism - ensure it's one of the allowed values
 case "${CONF_MECHANISM}" in
-  swapfile|zram|zram+file|auto|none)
+  swapfile|swapdev|zram|zram+file|zram+device|auto|none)
     # Valid mechanism, do nothing
     ;;
   *)
@@ -348,7 +368,23 @@ esac
 
 # Handle auto mechanism
 if [ "${CONF_MECHANISM}" = "auto" ]; then
-  CONF_MECHANISM="zram+file"
+  # If the configured path is already a block device, prefer device-backed zram
+  if [ -b "${CONF_SWAPFILE}" ]; then
+    CONF_MECHANISM="zram+device"
+  else
+    # Otherwise, see if a swap partition exists and prefer it for writeback
+    AUTODETECT_SWAPDEV="$( \
+      blkid -t TYPE=swap -o device 2>/dev/null | \
+        grep -v '^/dev/zram' | \
+        head -n1 \
+    )"
+    if [ -n "${AUTODETECT_SWAPDEV}" ] && [ -b "${AUTODETECT_SWAPDEV}" ]; then
+      CONF_SWAPFILE="${AUTODETECT_SWAPDEV}"
+      CONF_MECHANISM="zram+device"
+    else
+      CONF_MECHANISM="zram+file"
+    fi
+  fi
 fi
 
 # Handle auto writeback initiator
@@ -357,11 +393,11 @@ if [ "${CONF_WRITEBACK_INITIATOR}" = "auto" ]; then
 fi
 
 # For 'zram' and 'none' mechanisms, we don't need a swap file at all
-if [ "${CONF_MECHANISM}" = "zram" ] || [ "${CONF_MECHANISM}" = "none" ]; then
-  # Skip calculation and set swap size to 0
+if [ "${CONF_MECHANISM}" = "zram" ] || [ "${CONF_MECHANISM}" = "zram+device" ] || [ "${CONF_MECHANISM}" = "none" ] || [ "${CONF_MECHANISM}" = "swapdev" ]; then
+  # Skip file sizing for pure zram / device-backed paths
   CONF_SWAPSIZE="0"
 else
-  # Calculate swap size for other mechanisms
+  # Calculate swap size for other mechanisms (file-backed)
   export \
     CONF_SWAPFILE \
     CONF_SWAPFACTOR \
@@ -371,8 +407,8 @@ else
   CONF_SWAPSIZE="$(${SWAP_FILE_SIZE_CALC_BIN})"
 fi
 
-# Calculate zram size for 'zram' and 'zram+file' mechanisms
-if [ "${CONF_MECHANISM}" = "zram" ] || [ "${CONF_MECHANISM}" = "zram+file" ]; then
+# Calculate zram size for zram-based mechanisms
+if [ "${CONF_MECHANISM}" = "zram" ] || [ "${CONF_MECHANISM}" = "zram+file" ] || [ "${CONF_MECHANISM}" = "zram+device" ]; then
   export \
     CONF_ZRAM_FACTOR \
     CONF_ZRAM_MAXSIZE \
@@ -384,6 +420,14 @@ fi
 
 CONF_SWAPFILE="$(realpath "${CONF_SWAPFILE}")"
 
+# Validate device-backed mechanisms early to avoid running file logic on them
+if [ "${CONF_MECHANISM}" = "swapdev" ] || [ "${CONF_MECHANISM}" = "zram+device" ]; then
+  if [ ! -b "${CONF_SWAPFILE}" ]; then
+    echo "Error: ${CONF_MECHANISM} requires a block device at ${CONF_SWAPFILE}" >&2
+    exit 1
+  fi
+fi
+
 if [ "${CONF_MECHANISM}" = "zram" ]; then
   setup_zram_mechanism "zram"
   if [ -f "${CONF_SWAPFILE}" ]; then
@@ -394,6 +438,14 @@ elif [ "${CONF_MECHANISM}" = "zram+file" ]; then
   if [ "${CONF_WRITEBACK_INITIATOR}" = "timer" ]; then
     create_writeback_units "${CONF_INITIAL_WRITEBACK_DELAY}" "${CONF_PERIODIC_WRITEBACK_INTERVAL}"
   fi
+elif [ "${CONF_MECHANISM}" = "zram+device" ]; then
+  setup_zram_mechanism "zram+device"
+  if [ "${CONF_WRITEBACK_INITIATOR}" = "timer" ]; then
+    create_writeback_units "${CONF_INITIAL_WRITEBACK_DELAY}" "${CONF_PERIODIC_WRITEBACK_INTERVAL}"
+  fi
+elif [ "${CONF_MECHANISM}" = "swapdev" ]; then
+  # Use a native block device for swap, rely on implicit device unit ordering
+  create_swap_unit "${CONF_SWAPFILE}" "$(systemd-escape --path --suffix=device "${CONF_SWAPFILE}")" ""
 elif [ "${CONF_MECHANISM}" = "none" ]; then
   # No swap setup at all, but clean up existing swap file if present
   if [ -f "${CONF_SWAPFILE}" ]; then
