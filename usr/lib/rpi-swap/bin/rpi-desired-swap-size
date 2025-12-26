@@ -5,6 +5,16 @@ set -e
 : "${CONF_SWAPFILE:=/var/swap}"
 : "${CONF_SWAPFACTOR:=1}"
 
+# If a native block device is provided, skip file-based sizing logic.
+if [ -b "${CONF_SWAPFILE}" ]; then
+  if [ -n "${CONF_SWAPSIZE}" ] && [ "${CONF_SWAPSIZE}" -eq "${CONF_SWAPSIZE}" ] 2>/dev/null; then
+    echo "${CONF_SWAPSIZE}"
+  else
+    echo "0"
+  fi
+  exit 0
+fi
+
 # Function to validate floating-point input
 validate_float() {
   local value="$1"

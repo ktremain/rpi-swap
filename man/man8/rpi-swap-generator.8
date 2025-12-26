@@ -22,11 +22,11 @@ Resizes swap files during early boot before they are activated, avoiding memory 
 
 .TP
 \fBMultiple swap mechanisms\fR
-Supports traditional swap files, zram compression, and hybrid zram+file approaches.
+Supports traditional swap files, native swap partitions, zram compression, and hybrid zram+file or zram+device writeback approaches.
 
 .TP
 \fBAutomatic writeback\fR
-For hybrid configurations, implements intelligent writeback of less active pages from compressed memory to storage.
+For hybrid configurations, implements intelligent writeback of less active pages from compressed memory to storage (file-backed via loop or directly to a block device).
 
 .TP
 \fBPerformance optimisation\fR

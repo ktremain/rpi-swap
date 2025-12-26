@@ -23,6 +23,11 @@ export \
 CONF_SWAPSIZE="$(${SWAP_FILE_SIZE_CALC_BIN})"
 CONF_SWAPFILE="$(realpath "${CONF_SWAPFILE}")"
 
+# Skip resize logic when a block device is provided; sizing a device is not supported here.
+if [ -b "${CONF_SWAPFILE}" ]; then
+  exit 0
+fi
+
 # Note, fallocate can be used to create / grow / but not shrink
 
 if [ "${CONF_SWAPSIZE}" -eq 0 ]; then
