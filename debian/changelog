@@ -1,3 +1,13 @@
+rpi-swap (1.3.0) trixie; urgency=medium
+
+  * Add support for native swap partitions (swapdev mechanism)
+  * Add zram+device mechanism for direct device-backed writeback
+  * Auto mode now detects and prefers swap partitions
+  * Update documentation for device-backed swap workflows
+  * Clarify zram writeback behavior in man pages
+
+ -- Karl Tremain <karl@github.tremain.co.uk>  Thu, 26 Dec 2025 18:00:00 +0000
+
 rpi-swap (1.2.1) trixie; urgency=medium
 
   * man: Make swapfile example fixed size
